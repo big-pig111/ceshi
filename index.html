@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -198,6 +198,10 @@
       <rect x="15" y="9" width="30" height="15" fill="#fff" stroke="#222" stroke-width="3"/>
     </svg>
   </div>
+  <!-- Bonk锤子堆积容器 -->
+  <div id="bonk-hammer-container" style="position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:9999;"></div>
+  <!-- Bonk物理锤子canvas -->
+  <canvas id="bonk-physics-canvas" style="position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:10000;pointer-events:none;"></canvas>
   <!-- 导航栏 -->
   <nav class="bg-white shadow-md fixed w-full z-50 transition-all duration-300" id="navbar">
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -213,16 +217,16 @@
       </div>
       
       <div class="hidden md:flex items-center space-x-8">
-        <a href="#" class="text-gray-700 hover:text-primary transition-colors">首页</a>
-        <a href="#" class="text-gray-700 hover:text-primary transition-colors">分类</a>
-        <a href="#" class="text-gray-700 hover:text-primary transition-colors">关注</a>
-        <a href="#" class="text-gray-700 hover:text-primary transition-colors">发现</a>
+        <a href="#" class="text-gray-700 hover:text-primary transition-colors">Home</a>
+        <a href="#" class="text-gray-700 hover:text-primary transition-colors">Categories</a>
+        <a href="#" class="text-gray-700 hover:text-primary transition-colors">Following</a>
+        <a href="#" class="text-gray-700 hover:text-primary transition-colors">Discover</a>
       </div>
       
       <div class="flex items-center space-x-4">
         <button class="hidden md:flex items-center px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
           <i class="fa fa-search mr-2"></i>
-          <input type="text" placeholder="搜索直播..." class="bg-transparent outline-none w-36 lg:w-48">
+          <input type="text" placeholder="Search live..." class="bg-transparent outline-none w-36 lg:w-48">
         </button>
         
         <button class="md:hidden text-gray-700">
@@ -230,12 +234,17 @@
         </button>
         
         <button id="loginBtn" class="hidden md:block px-4 py-2 rounded-full bg-primary text-white hover:bg-primary/90 transition-colors">
-          登录
+          Login
         </button>
         
         <button id="startLiveBtn" class="px-4 py-2 rounded-full bg-secondary text-white hover:bg-secondary/90 transition-colors flex items-center">
+          <svg width="28" height="28" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="mr-2">
+            <rect x="8" y="8" width="20" height="8" fill="#FFD600" stroke="#222" stroke-width="3"/>
+            <rect x="16" y="16" width="4" height="14" fill="#A0522D" stroke="#222" stroke-width="3"/>
+            <rect x="18" y="30" width="2" height="4" fill="#222"/>
+          </svg>
           <i class="fa fa-plus-circle mr-2"></i>
-          <span>开始直播</span>
+          <span>Start Live</span>
         </button>
       </div>
     </div>
@@ -254,7 +263,7 @@
               <div class="absolute inset-0 flex items-center justify-center bg-dark/50">
                 <button id="startPreviewBtn" class="px-6 py-3 bg-primary text-white rounded-full flex items-center">
                   <i class="fa fa-play-circle mr-2"></i>
-                  <span>开启直播预览</span>
+                  <span>Start Live Preview</span>
                 </button>
               </div>
               <video id="liveVideo" class="w-full h-full object-cover" autoplay muted></video>
@@ -264,69 +273,79 @@
             <div class="p-6">
               <div class="flex justify-between items-start">
                 <div>
-                  <h1 class="text-2xl font-bold mb-2" id="streamTitle">我的精彩直播</h1>
+                  <h1 class="text-2xl font-bold mb-2 flex items-center" id="streamTitle">
+                    My Awesome Live
+                    <span class="ml-4 flex items-center">
+                      <svg width="40" height="40" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="8" y="8" width="20" height="8" fill="#FFD600" stroke="#222" stroke-width="3"/>
+                        <rect x="16" y="16" width="4" height="14" fill="#A0522D" stroke="#222" stroke-width="3"/>
+                        <rect x="18" y="30" width="2" height="4" fill="#222"/>
+                      </svg>
+                      <span style="color:#FF7D00;font-size:1.2em;margin-left:8px;">BONK!</span>
+                    </span>
+                  </h1>
                   <div class="flex items-center space-x-4 mb-4">
                     <div class="flex items-center">
-                      <img src="https://picsum.photos/40/40" alt="主播头像" class="w-10 h-10 rounded-full object-cover">
-                      <span class="ml-2 font-medium">主播名称</span>
+                      <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=animal1" alt="Pixel Animal Avatar" class="w-10 h-10 rounded-full object-cover">
+                      <span class="ml-2 font-medium">Streamer Name</span>
                     </div>
                     <div class="flex items-center text-gray-500">
                       <i class="fa fa-eye mr-1"></i>
-                      <span>0 观看</span>
+                      <span>0 viewers</span>
                     </div>
                     <div class="flex items-center text-red-500 live-indicator">
                       <span class="w-2 h-2 bg-red-500 rounded-full mr-1"></span>
-                      <span>未直播</span>
+                      <span>Offline</span>
                       <span class="bonk-emoji">🪓</span>
                     </div>
                   </div>
-                  <p class="text-gray-600 mb-4" id="streamDescription">分享我的生活精彩瞬间，快来一起互动吧！</p>
+                  <p class="text-gray-600 mb-4" id="streamDescription">Sharing awesome moments of my life, come and interact!</p>
                 </div>
                 
                 <div class="flex flex-col space-y-2">
                   <button id="publishStreamBtn" class="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                     <i class="fa fa-paper-plane mr-2"></i>
-                    <span>发布直播</span>
+                    <span>Go Live</span>
                   </button>
                   <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center">
                     <i class="fa fa-cog mr-2"></i>
-                    <span>设置</span>
+                    <span>Settings</span>
                   </button>
                 </div>
               </div>
               
               <!-- 直播设置选项 -->
               <div class="border-t pt-4 mt-4">
-                <h3 class="font-medium mb-3">直播设置</h3>
+                <h3 class="font-medium mb-3">Live Settings</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">直播标题</label>
-                    <input type="text" id="streamTitleInput" value="我的精彩直播" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Live Title</label>
+                    <input type="text" id="streamTitleInput" value="My Awesome Live" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">直播分类</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
                     <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
-                      <option>游戏</option>
-                      <option>音乐</option>
-                      <option>生活</option>
-                      <option>美食</option>
-                      <option>其他</option>
+                      <option>Gaming</option>
+                      <option>Music</option>
+                      <option>Lifestyle</option>
+                      <option>Food</option>
+                      <option>Other</option>
                     </select>
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">画质</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Quality</label>
                     <select id="qualitySelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
-                      <option value="low">标清 (480p)</option>
-                      <option value="medium" selected>高清 (720p)</option>
-                      <option value="high">超清 (1080p)</option>
+                      <option value="low">SD (480p)</option>
+                      <option value="medium" selected>HD (720p)</option>
+                      <option value="high">Full HD (1080p)</option>
                     </select>
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">隐私设置</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Privacy</label>
                     <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
-                      <option>公开</option>
-                      <option>仅关注者</option>
-                      <option>私密</option>
+                      <option>Public</option>
+                      <option>Followers Only</option>
+                      <option>Private</option>
                     </select>
                   </div>
                 </div>
@@ -339,17 +358,23 @@
         <div class="lg:w-4/12 space-y-6">
           <!-- 聊天区域 -->
           <div class="pixel-card pixel-card-chat flex flex-col h-[500px]">
-            <div class="p-4 border-b">
-              <h3 class="font-bold text-lg">聊天</h3>
+            <div class="p-4 border-b flex items-center">
+              <svg width="32" height="32" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="mr-2">
+                <rect x="8" y="8" width="20" height="8" fill="#FFD600" stroke="#222" stroke-width="3"/>
+                <rect x="16" y="16" width="4" height="14" fill="#A0522D" stroke="#222" stroke-width="3"/>
+                <rect x="18" y="30" width="2" height="4" fill="#222"/>
+              </svg>
+              <span style="font-size:1.2em;margin-right:8px;">🐶</span>
+              <h3 class="font-bold text-lg">Chat</h3>
             </div>
             <div id="chatMessages" class="flex-grow p-4 overflow-y-auto scrollbar-hide">
               <div class="text-center text-gray-500 italic">
-                直播开始后可以在这里和观众互动
+                You can interact with viewers here after the live starts
               </div>
             </div>
             <div class="p-4 border-t">
               <div class="flex">
-                <input type="text" id="chatInput" placeholder="发送消息..." class="flex-grow px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+                <input type="text" id="chatInput" placeholder="Send a message..." class="flex-grow px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
                 <button id="sendChatBtn" class="px-4 py-2 bg-primary text-white rounded-r-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                   <i class="fa fa-paper-plane"></i>
                 </button>
@@ -360,11 +385,11 @@
           <!-- 观众列表 -->
           <div class="pixel-card flex flex-col overflow-hidden">
             <div class="p-4 border-b">
-              <h3 class="font-bold text-lg">观众列表</h3>
+              <h3 class="font-bold text-lg">Viewers</h3>
             </div>
             <div id="viewersList" class="p-4">
               <div class="text-center text-gray-500 italic">
-                暂无观众
+                No viewers yet
               </div>
             </div>
           </div>
@@ -375,15 +400,15 @@
     <!-- 推荐直播 -->
     <section class="container mx-auto px-4 mt-12">
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">推荐直播</h2>
-        <a href="#" class="text-primary hover:underline">查看更多</a>
+        <h2 class="text-2xl font-bold">Recommended Lives</h2>
+        <a href="#" class="text-primary hover:underline">See More</a>
       </div>
       
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <!-- 直播卡片 -->
         <div class="pixel-card pixel-card-recommend overflow-hidden hover:shadow-xl transition-shadow">
           <div class="relative aspect-video">
-            <img src="https://picsum.photos/400/225?random=1" alt="游戏直播封面" class="w-full h-full object-cover">
+            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=cover1" alt="Pixel Art Cover" class="w-full h-full object-cover">
             <!-- Bonk贴纸 -->
             <div class="bonk-sticker">
               <svg width="38" height="38" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -394,97 +419,97 @@
             </div>
             <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center">
               <span class="w-2 h-2 bg-white rounded-full mr-1 live-indicator"></span>
-              直播中
+              LIVE
             </div>
             <div class="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
               <i class="fa fa-eye mr-1"></i> 2.4k
             </div>
           </div>
           <div class="p-4">
-            <h3 class="font-medium mb-2 line-clamp-1">热门游戏精彩时刻</h3>
+            <h3 class="font-medium mb-2 line-clamp-1">Hot Game Highlights</h3>
             <div class="flex items-center mb-3">
-              <img src="https://picsum.photos/32/32?random=1" alt="主播头像" class="w-8 h-8 rounded-full object-cover">
-              <span class="ml-2 text-sm">游戏达人</span>
+              <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=animal1" alt="Pixel Animal Avatar" class="w-8 h-8 rounded-full object-cover">
+              <span class="ml-2 text-sm">Game Master</span>
             </div>
             <div class="flex items-center text-xs text-gray-500">
-              <span>游戏</span>
+              <span>Gaming</span>
               <span class="mx-2">•</span>
-              <span>2小时前开播</span>
+              <span>Started 2h ago</span>
             </div>
           </div>
         </div>
         
         <div class="pixel-card pixel-card-recommend overflow-hidden hover:shadow-xl transition-shadow">
           <div class="relative aspect-video">
-            <img src="https://picsum.photos/400/225?random=2" alt="音乐直播封面" class="w-full h-full object-cover">
+            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=cover2" alt="Pixel Art Cover" class="w-full h-full object-cover">
             <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center">
               <span class="w-2 h-2 bg-white rounded-full mr-1 live-indicator"></span>
-              直播中
+              LIVE
             </div>
             <div class="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
               <i class="fa fa-eye mr-1"></i> 1.8k
             </div>
           </div>
           <div class="p-4">
-            <h3 class="font-medium mb-2 line-clamp-1">原创音乐分享会</h3>
+            <h3 class="font-medium mb-2 line-clamp-1">Original Music Sharing</h3>
             <div class="flex items-center mb-3">
-              <img src="https://picsum.photos/32/32?random=2" alt="主播头像" class="w-8 h-8 rounded-full object-cover">
-              <span class="ml-2 text-sm">音乐创作者</span>
+              <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=animal2" alt="Pixel Animal Avatar" class="w-8 h-8 rounded-full object-cover">
+              <span class="ml-2 text-sm">Music Creator</span>
             </div>
             <div class="flex items-center text-xs text-gray-500">
-              <span>音乐</span>
+              <span>Music</span>
               <span class="mx-2">•</span>
-              <span>1小时前开播</span>
+              <span>Started 1h ago</span>
             </div>
           </div>
         </div>
         
         <div class="pixel-card pixel-card-recommend overflow-hidden hover:shadow-xl transition-shadow">
           <div class="relative aspect-video">
-            <img src="https://picsum.photos/400/225?random=3" alt="美食直播封面" class="w-full h-full object-cover">
+            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=cover3" alt="Pixel Art Cover" class="w-full h-full object-cover">
             <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center">
               <span class="w-2 h-2 bg-white rounded-full mr-1 live-indicator"></span>
-              直播中
+              LIVE
             </div>
             <div class="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
               <i class="fa fa-eye mr-1"></i> 3.1k
             </div>
           </div>
           <div class="p-4">
-            <h3 class="font-medium mb-2 line-clamp-1">米其林大厨教你做菜</h3>
+            <h3 class="font-medium mb-2 line-clamp-1">Michelin Chef Cooking</h3>
             <div class="flex items-center mb-3">
-              <img src="https://picsum.photos/32/32?random=3" alt="主播头像" class="w-8 h-8 rounded-full object-cover">
-              <span class="ml-2 text-sm">美食博主</span>
+              <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=animal3" alt="Pixel Animal Avatar" class="w-8 h-8 rounded-full object-cover">
+              <span class="ml-2 text-sm">Food Blogger</span>
             </div>
             <div class="flex items-center text-xs text-gray-500">
-              <span>美食</span>
+              <span>Food</span>
               <span class="mx-2">•</span>
-              <span>3小时前开播</span>
+              <span>Started 3h ago</span>
             </div>
           </div>
         </div>
         
         <div class="pixel-card pixel-card-recommend overflow-hidden hover:shadow-xl transition-shadow">
           <div class="relative aspect-video">
-            <img src="https://picsum.photos/400/225?random=4" alt="生活直播封面" class="w-full h-full object-cover">
+            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=cover4" alt="Pixel Art Cover" class="w-full h-full object-cover">
             <div class="absolute top-2 left-2 bg-gray-500 text-white text-xs px-2 py-1 rounded flex items-center">
               <span class="w-2 h-2 bg-white rounded-full mr-1"></span>
-              即将开播
+              Starting in 10 min
             </div>
             <div class="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
               <i class="fa fa-user mr-1"></i> 523
             </div>
           </div>
           <div class="p-4">
-            <h3 class="font-medium mb-2 line-clamp-1">户外探险直播</h3>
+            <h3 class="font-medium mb-2 line-clamp-1">Outdoor Adventure Live</h3>
             <div class="flex items-center mb-3">
-              <img src="https://picsum.photos/32/32?random=4" alt="主播头像" class="w-8 h-8 rounded-full object-cover">
-              <span class="ml-2 text-sm">探险家</span>
+              <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=animal4" alt="Pixel Animal Avatar" class="w-8 h-8 rounded-full object-cover">
+              <span class="ml-2 text-sm">Adventurer</span>
             </div>
             <div class="flex items-center text-xs text-gray-500">
-              <span>生活</span>
+              <span>Lifestyle</span>
               <span class="mx-2">•</span>
-              <span>10分钟后开播</span>
+              <span>Starting in 10 min</span>
             </div>
           </div>
         </div>
@@ -492,80 +517,11 @@
     </section>
   </main>
 
-  <!-- 页脚 -->
-  <footer class="bg-dark text-white py-10">
-    <div class="container mx-auto px-4">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div>
-          <div class="flex items-center space-x-2 mb-4">
-            <i class="fa fa-video-camera text-primary text-2xl"></i>
-            <span class="text-xl font-bold">Bonk Live</span>
-          </div>
-          <p class="text-gray-400 mb-4">分享你的精彩瞬间，连接全球观众</p>
-          <div class="flex space-x-4">
-            <a href="#" class="text-gray-400 hover:text-white transition-colors">
-              <i class="fa fa-facebook"></i>
-            </a>
-            <a href="#" class="text-gray-400 hover:text-white transition-colors">
-              <i class="fa fa-twitter"></i>
-            </a>
-            <a href="#" class="text-gray-400 hover:text-white transition-colors">
-              <i class="fa fa-instagram"></i>
-            </a>
-            <a href="#" class="text-gray-400 hover:text-white transition-colors">
-              <i class="fa fa-youtube-play"></i>
-            </a>
-          </div>
-        </div>
-        
-        <div>
-          <h4 class="font-bold text-lg mb-4">快速链接</h4>
-          <ul class="space-y-2">
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">分类</a></li>
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">关注</a></li>
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">发现</a></li>
-          </ul>
-        </div>
-        
-        <div>
-          <h4 class="font-bold text-lg mb-4">帮助中心</h4>
-          <ul class="space-y-2">
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">常见问题</a></li>
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">如何直播</a></li>
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">账号安全</a></li>
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">联系我们</a></li>
-          </ul>
-        </div>
-        
-        <div>
-          <h4 class="font-bold text-lg mb-4">订阅更新</h4>
-          <p class="text-gray-400 mb-4">获取最新的直播动态和独家优惠</p>
-          <div class="flex">
-            <input type="email" placeholder="你的邮箱地址" class="flex-grow px-4 py-2 rounded-l-lg focus:outline-none">
-            <button class="px-4 py-2 bg-primary text-white rounded-r-lg hover:bg-primary/90 transition-colors">
-              订阅
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <div class="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-        <p class="text-gray-400">© 2025 Bonk Live. 保留所有权利</p>
-        <div class="flex space-x-6 mt-4 md:mt-0">
-          <a href="#" class="text-gray-400 hover:text-white transition-colors">服务条款</a>
-          <a href="#" class="text-gray-400 hover:text-white transition-colors">隐私政策</a>
-          <a href="#" class="text-gray-400 hover:text-white transition-colors">Cookie 设置</a>
-        </div>
-      </div>
-    </div>
-  </footer>
-
   <!-- 登录模态框 -->
   <div id="loginModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
     <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all duration-300 scale-95 opacity-0" id="loginModalContent">
       <div class="flex justify-between items-center mb-6">
-        <h3 class="text-xl font-bold">登录账号</h3>
+        <h3 class="text-xl font-bold">Login Account</h3>
         <button id="closeLoginModal" class="text-gray-500 hover:text-gray-700">
           <i class="fa fa-times"></i>
         </button>
@@ -573,27 +529,49 @@
       
       <form>
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
-          <input type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="输入你的邮箱">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="Enter your email">
         </div>
         
         <div class="mb-6">
-          <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
-          <input type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="输入你的密码">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <input type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="Enter your password">
         </div>
         
         <button type="submit" class="w-full px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
-          登录
+          Login
         </button>
         
         <div class="flex justify-center mt-4">
-          <span class="text-sm text-gray-600">还没有账号？</span>
-          <a href="#" class="text-sm text-primary ml-2 hover:underline">立即注册</a>
+          <span class="text-sm text-gray-600">Don't have an account?</span>
+          <a href="#" class="text-sm text-primary ml-2 hover:underline">Register Now</a>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- Pixel Bonk Warning Modal -->
+  <div id="bonk-warning-modal" style="display:flex;align-items:center;justify-content:center;position:fixed;z-index:20000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);">
+    <div style="background:#ffe066;border:6px solid #222;box-shadow:8px 8px 0 #fffbe6,0 0 0 6px #222;font-family:'Press Start 2P',monospace;padding:32px 32px 24px 32px;min-width:340px;max-width:90vw;text-align:center;position:relative;">
+      <div style="display:flex;justify-content:center;margin-bottom:18px;">
+        <svg width="56" height="56" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="8" width="20" height="8" fill="#FFD600" stroke="#222" stroke-width="3"/>
+          <rect x="16" y="16" width="4" height="14" fill="#A0522D" stroke="#222" stroke-width="3"/>
+          <rect x="18" y="30" width="2" height="4" fill="#222"/>
+        </svg>
+      </div>
+      <div style="color:#222;font-size:16px;line-height:2;letter-spacing:1px;">
+        <b>Warning:</b> This site is under construction.<br>
+        Features are incomplete.<br>
+        <span style="color:#FF7D00;">Watch out for falling Bonk hammers!</span>
+      </div>
+      <button id="bonk-warning-ok" style="margin-top:28px;border:4px solid #222;background:#fffbe6;box-shadow:0 0 0 4px #222;font-family:'Press Start 2P',monospace;font-size:16px;padding:12px 32px;cursor:pointer;transition:background 0.1s;border-radius:0;outline:none;">
+        OK
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
   <script>
     // 直播功能相关代码
     document.addEventListener('DOMContentLoaded', function() {
@@ -659,7 +637,7 @@
       startPreviewBtn.addEventListener('click', async function() {
         if (isPreviewing) {
           stopPreview();
-          startPreviewBtn.innerHTML = '<i class="fa fa-play-circle mr-2"></i><span>开启直播预览</span>';
+          startPreviewBtn.innerHTML = '<i class="fa fa-play-circle mr-2"></i><span>Start Live Preview</span>';
         } else {
           try {
             const quality = qualitySelect.value;
@@ -680,7 +658,7 @@
             mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
             liveVideo.srcObject = mediaStream;
             isPreviewing = true;
-            startPreviewBtn.innerHTML = '<i class="fa fa-stop-circle mr-2"></i><span>关闭直播预览</span>';
+            startPreviewBtn.innerHTML = '<i class="fa fa-stop-circle mr-2"></i><span>Stop Live Preview</span>';
             publishStreamBtn.disabled = false;
             sendChatBtn.disabled = false;
             
@@ -697,10 +675,10 @@
       publishStreamBtn.addEventListener('click', function() {
         if (isStreaming) {
           stopStream();
-          publishStreamBtn.innerHTML = '<i class="fa fa-paper-plane mr-2"></i><span>发布直播</span>';
+          publishStreamBtn.innerHTML = '<i class="fa fa-paper-plane mr-2"></i><span>Go Live</span>';
         } else {
           startStream();
-          publishStreamBtn.innerHTML = '<i class="fa fa-stop mr-2"></i><span>停止直播</span>';
+          publishStreamBtn.innerHTML = '<i class="fa fa-stop mr-2"></i><span>Stop Live</span>';
         }
       });
       
@@ -724,7 +702,7 @@
       // 开始直播
       function startStream() {
         isStreaming = true;
-        addChatMessage('系统', '直播已开始！欢迎观众进入直播间');
+        addChatMessage('System', 'Live started! Welcome to the stream!');
         
         // 更新直播标题
         streamTitle.textContent = streamTitleInput.value;
@@ -741,7 +719,7 @@
       // 停止直播
       function stopStream() {
         isStreaming = false;
-        addChatMessage('系统', '直播已结束，感谢观看！');
+        addChatMessage('System', 'Live ended, thank you for watching!');
         
         // 清空观众列表
         viewers = [];
@@ -775,15 +753,16 @@
         
         if (sender === '系统') {
           messageElement.innerHTML = `
-            <div class="text-center">
+            <div class="text-center flex flex-col items-center">
               <span class="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">${sender}</span>
+              <span style="font-size:1.5em;">🪓 BONK!</span>
             </div>
             <p class="text-center text-sm text-gray-600 mt-1">${message}</p>
           `;
         } else {
           messageElement.innerHTML = `
             <div class="flex items-start">
-              <img src="https://picsum.photos/32/32?random=${sender === '主播' ? 0 : Math.random()}" alt="${sender}头像" class="w-8 h-8 rounded-full object-cover mr-2">
+              <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=animal${sender === '主播' ? 0 : Math.floor(Math.random()*1000)}" alt="${sender} Pixel Animal" class="w-8 h-8 rounded-full object-cover mr-2">
               <div>
                 <div class="flex items-center">
                   <span class="font-medium text-sm">${sender}</span>
@@ -804,7 +783,7 @@
         viewersList.innerHTML = '';
         
         if (viewers.length === 0) {
-          viewersList.innerHTML = '<div class="text-center text-gray-500 italic">暂无观众</div>';
+          viewersList.innerHTML = '<div class="text-center text-gray-500 italic">No viewers yet</div>';
           return;
         }
         
@@ -812,7 +791,7 @@
           const viewerElement = document.createElement('div');
           viewerElement.className = 'flex items-center mb-3';
           viewerElement.innerHTML = `
-            <img src="https://picsum.photos/32/32?random=${index + 1}" alt="${viewer}头像" class="w-8 h-8 rounded-full object-cover mr-2">
+            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=animal${index + 1}" alt="${viewer} Pixel Animal" class="w-8 h-8 rounded-full object-cover mr-2">
             <span class="text-sm">${viewer}</span>
           `;
           viewersList.appendChild(viewerElement);
@@ -854,7 +833,7 @@
             
             // 延迟添加观众，模拟真实情况
             setTimeout(() => {
-              addChatMessage('系统', `${viewer} 进入直播间`);
+              addChatMessage('System', `${viewer} joined the stream`);
               updateViewersList();
               
               // 随机发送消息
@@ -879,6 +858,150 @@
           }
         }
       }
+    });
+
+    // Bonk物理锤子雨（matter.js）
+    const bonkCanvas = document.getElementById('bonk-physics-canvas');
+    const bonkCtx = bonkCanvas.getContext('2d');
+    let ground = null;
+    function resizeBonkCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      bonkCanvas.width = window.innerWidth * dpr;
+      bonkCanvas.height = window.innerHeight * dpr;
+      bonkCanvas.style.width = window.innerWidth + 'px';
+      bonkCanvas.style.height = window.innerHeight + 'px';
+      bonkCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // 移除旧地面，新建新地面
+      if (ground) {
+        World.remove(world, ground);
+      }
+      ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight-10, window.innerWidth, 20, { isStatic: true, render: {visible: false} });
+      World.add(world, ground);
+    }
+
+    // Matter.js setup
+    const Engine = window.Matter.Engine;
+    const Render = window.Matter.Render;
+    const World = window.Matter.World;
+    const Bodies = window.Matter.Bodies;
+    const Body = window.Matter.Body;
+    const Composite = window.Matter.Composite;
+    const Events = window.Matter.Events;
+
+    const engine = Engine.create();
+    const world = engine.world;
+    world.gravity.y = 1.2;
+
+    // 存储所有锤子刚体和其绘制信息
+    let bonkHammers = [];
+
+    // 锤子SVG路径（简化版）
+    function drawBonkHammer(ctx, x, y, angle=0) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      // 柄
+      ctx.fillStyle = '#A0522D';
+      ctx.fillRect(8, 16, 8, 28);
+      // 柄底
+      ctx.fillStyle = '#222';
+      ctx.fillRect(12, 44, 2, 6);
+      // 头
+      ctx.fillStyle = '#FFD600';
+      ctx.strokeStyle = '#222';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.rect(0, 4, 24, 10);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 添加锤子刚体
+    function addBonkHammerPhysics(x) {
+      // 每个锤子是一个复合刚体（头+柄）
+      // 这里用一个大矩形近似
+      const width = 28, height = 36;
+      // y=0表示canvas最顶端
+      const hammer = Bodies.rectangle(x, 0, width, height, {
+        restitution: 0.2,
+        friction: 0.8,
+        density: 0.002,
+        render: {visible: false}
+      });
+      World.add(world, hammer);
+      bonkHammers.push({body: hammer, width, height});
+    }
+
+    // 渲染所有锤子
+    function renderBonkHammers() {
+      bonkCtx.clearRect(0, 0, bonkCanvas.width, bonkCanvas.height);
+      for (const hammer of bonkHammers) {
+        const {body, width, height} = hammer;
+        // 调试输出
+        // console.log('draw hammer at', body.position.x, body.position.y);
+        drawBonkHammer(bonkCtx, body.position.x - width/2, body.position.y - height/2, body.angle);
+      }
+    }
+
+    // 动画循环
+    function bonkPhysicsLoop() {
+      Engine.update(engine, 1000/60);
+      renderBonkHammers();
+      requestAnimationFrame(bonkPhysicsLoop);
+    }
+    bonkPhysicsLoop();
+
+    // 按钮点击生成物理锤子
+    function bonkPhysicsRain() {
+      const count = (Math.floor(Math.random() * 21) + 30) * 9; // 270~450个
+      const batchSize = 5; // 每批同时掉落5个
+      const batchDelay = 80; // 每批间隔80ms
+      let dropped = 0;
+      function dropBatch() {
+        for (let j = 0; j < batchSize && dropped < count; j++, dropped++) {
+          const x = Math.floor(Math.random() * (bonkCanvas.width - 40)) + 20;
+          addBonkHammerPhysics(x);
+        }
+        if (dropped < count) setTimeout(dropBatch, batchDelay);
+      }
+      dropBatch();
+    }
+
+    // 监听所有按钮
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(() => {
+        document.querySelectorAll('button').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            bonkPhysicsRain();
+          });
+        });
+      }, 500);
+    });
+
+    // 现在再调用resize和监听resize
+    resizeBonkCanvas();
+    window.addEventListener('resize', resizeBonkCanvas);
+
+    // 全局点击召唤锤子雨，排除输入框、下拉框、文本域、contenteditable
+    document.addEventListener('click', function(e) {
+      const tag = e.target.tagName.toLowerCase();
+      if (
+        tag === "input" ||
+        tag === "textarea" ||
+        tag === "select" ||
+        e.target.isContentEditable
+      ) return;
+      bonkPhysicsRain();
+    });
+
+    // Show pixel Bonk warning modal on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      const modal = document.getElementById('bonk-warning-modal');
+      const okBtn = document.getElementById('bonk-warning-ok');
+      okBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+      });
     });
   </script>
 </body>
