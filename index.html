@@ -1,26 +1,42 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LetsBonk 最新發行代幣監控器</title>
+  <title>Bonk Live - 实时直播平台</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入像素字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   
+  <!-- Tailwind 配置 -->
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            primary: '#ffb300',
-            secondary: '#4caf50',
-            danger: '#ff5252',
-            dark: '#1c1c1c',
-            darker: '#0f0f0f',
-            border: '#333'
+            primary: '#165DFF',
+            secondary: '#FF7D00',
+            dark: '#1E293B',
+            light: '#F8FAFC',
+            pixelbg: '#e0e0e0',
+            pixelborder: '#222',
           },
           fontFamily: {
-            sans: ['Segoe UI', 'sans-serif'],
+            pixel: ['"Press Start 2P"', 'monospace'],
+            inter: ['Inter', 'sans-serif'],
+          },
+          borderRadius: {
+            none: '0',
+            sm: '0',
+            DEFAULT: '0',
+            md: '0',
+            lg: '0',
+            xl: '0',
+            full: '0',
+          },
+          boxShadow: {
+            none: 'none',
           },
         },
       }
@@ -28,270 +44,842 @@
   </script>
   
   <style type="text/tailwindcss">
+    html, body, * {
+      font-family: 'Press Start 2P', monospace !important;
+      letter-spacing: 0.5px;
+      font-size: 20px;
+      box-sizing: border-box;
+    }
+    body {
+      /* 像素格子背景 */
+      background-color: #b3e0ff;
+      background-image: linear-gradient(90deg, #a3d8ff 1px, transparent 1px),
+                        linear-gradient(180deg, #a3d8ff 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
     @layer utilities {
       .content-auto {
         content-visibility: auto;
       }
-      .token-card-hover {
-        @apply transition-all duration-300 hover:border-primary hover:shadow-lg hover:shadow-primary/20;
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
       }
-      .spinner {
-        @apply w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin;
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .live-indicator {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      @keyframes pulse {
+        0%, 100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+      /* 像素风按钮 */
+      .pixel-btn {
+        border: 6px solid #222;
+        background: #fffbe6;
+        box-shadow: 8px 8px 0 0 #ffe066, 0 0 0 6px #222;
+        font-family: 'Press Start 2P', monospace;
+        border-radius: 0 !important;
+        font-size: 1.1em;
+        padding: 18px 32px;
+        transition: background 0.1s, transform 0.1s;
+      }
+      .pixel-btn:hover {
+        background: #c0c0c0;
+        animation: bonkshake 0.2s;
+      }
+      @keyframes bonkshake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        50% { transform: translateX(4px); }
+        75% { transform: translateX(-4px); }
+        100% { transform: translateX(0); }
+      }
+      /* 像素风卡片 */
+      .pixel-card {
+        border: 6px solid #222;
+        background: #fff;
+        box-shadow: 8px 8px 0 0 #b3e0ff, 0 0 0 6px #222;
+        border-radius: 0 !important;
+        padding: 18px;
+      }
+      /* 像素风输入框 */
+      .pixel-input {
+        border: 6px solid #222;
+        background: #fff;
+        font-family: 'Press Start 2P', monospace;
+        border-radius: 0 !important;
+        padding: 14px 18px;
+        font-size: 1.1em;
+      }
+      .pixel-input:focus {
+        outline: 2px solid #165DFF;
+        background: #f0f8ff;
+      }
+      /* 像素风下拉框 */
+      .pixel-select {
+        border: 6px solid #222;
+        background: #fff;
+        font-family: 'Press Start 2P', monospace;
+        border-radius: 0 !important;
+        padding: 14px 18px;
+        font-size: 1.1em;
+      }
+      /* Bonk贴纸角标 */
+      .bonk-sticker {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 38px;
+        height: 38px;
+        z-index: 10;
+      }
+      /* Bonk表情 */
+      .bonk-emoji {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        vertical-align: middle;
+        margin-left: 8px;
+      }
+      /* 推荐区卡片特殊底色 */
+      .pixel-card-recommend {
+        background: #ffe066;
+        box-shadow: 8px 8px 0 0 #fffbe6, 0 0 0 6px #222;
+      }
+      /* 聊天区底色 */
+      .pixel-card-chat {
+        background: #e0f7fa;
+        box-shadow: 8px 8px 0 0 #b3e0ff, 0 0 0 6px #222;
+      }
+      /* 直播区底色 */
+      .pixel-card-live {
+        background: #fff;
+        box-shadow: 8px 8px 0 0 #b3e0ff, 0 0 0 6px #222;
+      }
+      /* 像素云点缀 */
+      .pixel-cloud {
+        position: absolute;
+        z-index: 1;
+        width: 80px;
+        height: 48px;
+        left: 10vw;
+        top: 40px;
+      }
+      .pixel-cloud2 {
+        position: absolute;
+        z-index: 1;
+        width: 60px;
+        height: 36px;
+        right: 12vw;
+        top: 120px;
       }
     }
   </style>
 </head>
-<body class="bg-darker text-white font-sans min-h-screen flex flex-col">
-  <header class="container mx-auto py-6">
-    <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-primary flex items-center">
-      <i class="fa fa-money mr-3"></i> LetsBonk 最新初始化代幣
-    </h1>
-  </header>
-
-  <main class="container mx-auto flex-grow">
-    <!-- 加载状态 -->
-    <div id="loading" class="flex justify-center items-center py-10">
-      <div class="spinner"></div>
-      <span class="ml-3 text-gray-400">正在连接数据服务...</span>
+<body class="font-inter bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+  <!-- 像素云点缀 -->
+  <div class="pixel-cloud">
+    <svg width="80" height="48" viewBox="0 0 80 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="24" width="64" height="16" fill="#fff" stroke="#222" stroke-width="3"/>
+      <rect x="20" y="12" width="40" height="20" fill="#fff" stroke="#222" stroke-width="3"/>
+      <rect x="32" y="4" width="16" height="16" fill="#fff" stroke="#222" stroke-width="3"/>
+    </svg>
+  </div>
+  <div class="pixel-cloud2">
+    <svg width="60" height="36" viewBox="0 0 60 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="18" width="48" height="12" fill="#fff" stroke="#222" stroke-width="3"/>
+      <rect x="15" y="9" width="30" height="15" fill="#fff" stroke="#222" stroke-width="3"/>
+    </svg>
+  </div>
+  <!-- 导航栏 -->
+  <nav class="bg-white shadow-md fixed w-full z-50 transition-all duration-300" id="navbar">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <i class="fa fa-video-camera text-primary text-2xl"></i>
+        <span class="text-3xl font-bold text-primary">Bonk Live</span>
+        <!-- 像素锤子SVG -->
+        <svg class="inline ml-2" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="8" width="20" height="8" fill="#FFD600" stroke="#222" stroke-width="3"/>
+          <rect x="16" y="16" width="4" height="14" fill="#A0522D" stroke="#222" stroke-width="3"/>
+          <rect x="18" y="30" width="2" height="4" fill="#222"/>
+        </svg>
+      </div>
+      
+      <div class="hidden md:flex items-center space-x-8">
+        <a href="#" class="text-gray-700 hover:text-primary transition-colors">首页</a>
+        <a href="#" class="text-gray-700 hover:text-primary transition-colors">分类</a>
+        <a href="#" class="text-gray-700 hover:text-primary transition-colors">关注</a>
+        <a href="#" class="text-gray-700 hover:text-primary transition-colors">发现</a>
+      </div>
+      
+      <div class="flex items-center space-x-4">
+        <button class="hidden md:flex items-center px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
+          <i class="fa fa-search mr-2"></i>
+          <input type="text" placeholder="搜索直播..." class="bg-transparent outline-none w-36 lg:w-48">
+        </button>
+        
+        <button class="md:hidden text-gray-700">
+          <i class="fa fa-search text-xl"></i>
+        </button>
+        
+        <button id="loginBtn" class="hidden md:block px-4 py-2 rounded-full bg-primary text-white hover:bg-primary/90 transition-colors">
+          登录
+        </button>
+        
+        <button id="startLiveBtn" class="px-4 py-2 rounded-full bg-secondary text-white hover:bg-secondary/90 transition-colors flex items-center">
+          <i class="fa fa-plus-circle mr-2"></i>
+          <span>开始直播</span>
+        </button>
+      </div>
     </div>
+  </nav>
 
-    <!-- 代币卡片容器 -->
-    <div id="tokens" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-6"></div>
+  <!-- 主内容区 -->
+  <main class="flex-grow pt-20 pb-10">
+    <!-- 直播区域 -->
+    <section class="container mx-auto px-4">
+      <div class="flex flex-col lg:flex-row gap-6">
+        <!-- 左侧直播流 -->
+        <div class="lg:w-8/12">
+          <div class="pixel-card pixel-card-live overflow-hidden">
+            <!-- 直播预览/播放区 -->
+            <div id="livePreview" class="relative bg-black aspect-video flex items-center justify-center">
+              <div class="absolute inset-0 flex items-center justify-center bg-dark/50">
+                <button id="startPreviewBtn" class="px-6 py-3 bg-primary text-white rounded-full flex items-center">
+                  <i class="fa fa-play-circle mr-2"></i>
+                  <span>开启直播预览</span>
+                </button>
+              </div>
+              <video id="liveVideo" class="w-full h-full object-cover" autoplay muted></video>
+            </div>
+            
+            <!-- 直播信息 -->
+            <div class="p-6">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h1 class="text-2xl font-bold mb-2" id="streamTitle">我的精彩直播</h1>
+                  <div class="flex items-center space-x-4 mb-4">
+                    <div class="flex items-center">
+                      <img src="https://picsum.photos/40/40" alt="主播头像" class="w-10 h-10 rounded-full object-cover">
+                      <span class="ml-2 font-medium">主播名称</span>
+                    </div>
+                    <div class="flex items-center text-gray-500">
+                      <i class="fa fa-eye mr-1"></i>
+                      <span>0 观看</span>
+                    </div>
+                    <div class="flex items-center text-red-500 live-indicator">
+                      <span class="w-2 h-2 bg-red-500 rounded-full mr-1"></span>
+                      <span>未直播</span>
+                      <span class="bonk-emoji">🪓</span>
+                    </div>
+                  </div>
+                  <p class="text-gray-600 mb-4" id="streamDescription">分享我的生活精彩瞬间，快来一起互动吧！</p>
+                </div>
+                
+                <div class="flex flex-col space-y-2">
+                  <button id="publishStreamBtn" class="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <i class="fa fa-paper-plane mr-2"></i>
+                    <span>发布直播</span>
+                  </button>
+                  <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center">
+                    <i class="fa fa-cog mr-2"></i>
+                    <span>设置</span>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- 直播设置选项 -->
+              <div class="border-t pt-4 mt-4">
+                <h3 class="font-medium mb-3">直播设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">直播标题</label>
+                    <input type="text" id="streamTitleInput" value="我的精彩直播" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">直播分类</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+                      <option>游戏</option>
+                      <option>音乐</option>
+                      <option>生活</option>
+                      <option>美食</option>
+                      <option>其他</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">画质</label>
+                    <select id="qualitySelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+                      <option value="low">标清 (480p)</option>
+                      <option value="medium" selected>高清 (720p)</option>
+                      <option value="high">超清 (1080p)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">隐私设置</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+                      <option>公开</option>
+                      <option>仅关注者</option>
+                      <option>私密</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 右侧聊天和观众 -->
+        <div class="lg:w-4/12 space-y-6">
+          <!-- 聊天区域 -->
+          <div class="pixel-card pixel-card-chat flex flex-col h-[500px]">
+            <div class="p-4 border-b">
+              <h3 class="font-bold text-lg">聊天</h3>
+            </div>
+            <div id="chatMessages" class="flex-grow p-4 overflow-y-auto scrollbar-hide">
+              <div class="text-center text-gray-500 italic">
+                直播开始后可以在这里和观众互动
+              </div>
+            </div>
+            <div class="p-4 border-t">
+              <div class="flex">
+                <input type="text" id="chatInput" placeholder="发送消息..." class="flex-grow px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+                <button id="sendChatBtn" class="px-4 py-2 bg-primary text-white rounded-r-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                  <i class="fa fa-paper-plane"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 观众列表 -->
+          <div class="pixel-card flex flex-col overflow-hidden">
+            <div class="p-4 border-b">
+              <h3 class="font-bold text-lg">观众列表</h3>
+            </div>
+            <div id="viewersList" class="p-4">
+              <div class="text-center text-gray-500 italic">
+                暂无观众
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
     
-    <!-- 错误提示 -->
-    <div id="error" class="hidden bg-danger/10 border border-danger/30 rounded-lg p-4 my-6 text-danger"></div>
+    <!-- 推荐直播 -->
+    <section class="container mx-auto px-4 mt-12">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">推荐直播</h2>
+        <a href="#" class="text-primary hover:underline">查看更多</a>
+      </div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- 直播卡片 -->
+        <div class="pixel-card pixel-card-recommend overflow-hidden hover:shadow-xl transition-shadow">
+          <div class="relative aspect-video">
+            <img src="https://picsum.photos/400/225?random=1" alt="游戏直播封面" class="w-full h-full object-cover">
+            <!-- Bonk贴纸 -->
+            <div class="bonk-sticker">
+              <svg width="38" height="38" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="8" y="8" width="20" height="8" fill="#FFD600" stroke="#222" stroke-width="3"/>
+                <rect x="16" y="16" width="4" height="14" fill="#A0522D" stroke="#222" stroke-width="3"/>
+                <rect x="18" y="30" width="2" height="4" fill="#222"/>
+              </svg>
+            </div>
+            <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center">
+              <span class="w-2 h-2 bg-white rounded-full mr-1 live-indicator"></span>
+              直播中
+            </div>
+            <div class="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+              <i class="fa fa-eye mr-1"></i> 2.4k
+            </div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-medium mb-2 line-clamp-1">热门游戏精彩时刻</h3>
+            <div class="flex items-center mb-3">
+              <img src="https://picsum.photos/32/32?random=1" alt="主播头像" class="w-8 h-8 rounded-full object-cover">
+              <span class="ml-2 text-sm">游戏达人</span>
+            </div>
+            <div class="flex items-center text-xs text-gray-500">
+              <span>游戏</span>
+              <span class="mx-2">•</span>
+              <span>2小时前开播</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="pixel-card pixel-card-recommend overflow-hidden hover:shadow-xl transition-shadow">
+          <div class="relative aspect-video">
+            <img src="https://picsum.photos/400/225?random=2" alt="音乐直播封面" class="w-full h-full object-cover">
+            <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center">
+              <span class="w-2 h-2 bg-white rounded-full mr-1 live-indicator"></span>
+              直播中
+            </div>
+            <div class="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+              <i class="fa fa-eye mr-1"></i> 1.8k
+            </div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-medium mb-2 line-clamp-1">原创音乐分享会</h3>
+            <div class="flex items-center mb-3">
+              <img src="https://picsum.photos/32/32?random=2" alt="主播头像" class="w-8 h-8 rounded-full object-cover">
+              <span class="ml-2 text-sm">音乐创作者</span>
+            </div>
+            <div class="flex items-center text-xs text-gray-500">
+              <span>音乐</span>
+              <span class="mx-2">•</span>
+              <span>1小时前开播</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="pixel-card pixel-card-recommend overflow-hidden hover:shadow-xl transition-shadow">
+          <div class="relative aspect-video">
+            <img src="https://picsum.photos/400/225?random=3" alt="美食直播封面" class="w-full h-full object-cover">
+            <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center">
+              <span class="w-2 h-2 bg-white rounded-full mr-1 live-indicator"></span>
+              直播中
+            </div>
+            <div class="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+              <i class="fa fa-eye mr-1"></i> 3.1k
+            </div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-medium mb-2 line-clamp-1">米其林大厨教你做菜</h3>
+            <div class="flex items-center mb-3">
+              <img src="https://picsum.photos/32/32?random=3" alt="主播头像" class="w-8 h-8 rounded-full object-cover">
+              <span class="ml-2 text-sm">美食博主</span>
+            </div>
+            <div class="flex items-center text-xs text-gray-500">
+              <span>美食</span>
+              <span class="mx-2">•</span>
+              <span>3小时前开播</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="pixel-card pixel-card-recommend overflow-hidden hover:shadow-xl transition-shadow">
+          <div class="relative aspect-video">
+            <img src="https://picsum.photos/400/225?random=4" alt="生活直播封面" class="w-full h-full object-cover">
+            <div class="absolute top-2 left-2 bg-gray-500 text-white text-xs px-2 py-1 rounded flex items-center">
+              <span class="w-2 h-2 bg-white rounded-full mr-1"></span>
+              即将开播
+            </div>
+            <div class="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+              <i class="fa fa-user mr-1"></i> 523
+            </div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-medium mb-2 line-clamp-1">户外探险直播</h3>
+            <div class="flex items-center mb-3">
+              <img src="https://picsum.photos/32/32?random=4" alt="主播头像" class="w-8 h-8 rounded-full object-cover">
+              <span class="ml-2 text-sm">探险家</span>
+            </div>
+            <div class="flex items-center text-xs text-gray-500">
+              <span>生活</span>
+              <span class="mx-2">•</span>
+              <span>10分钟后开播</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <footer class="container mx-auto py-4 text-center text-gray-500 text-sm">
-    <p>© 2023 LetsBonk 代幣監控器 | 數據來源: BitQuery</p>
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white py-10">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <i class="fa fa-video-camera text-primary text-2xl"></i>
+            <span class="text-xl font-bold">Bonk Live</span>
+          </div>
+          <p class="text-gray-400 mb-4">分享你的精彩瞬间，连接全球观众</p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+              <i class="fa fa-facebook"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+              <i class="fa fa-instagram"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors">
+              <i class="fa fa-youtube-play"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="font-bold text-lg mb-4">快速链接</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">分类</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">关注</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">发现</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="font-bold text-lg mb-4">帮助中心</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">常见问题</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">如何直播</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">账号安全</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">联系我们</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="font-bold text-lg mb-4">订阅更新</h4>
+          <p class="text-gray-400 mb-4">获取最新的直播动态和独家优惠</p>
+          <div class="flex">
+            <input type="email" placeholder="你的邮箱地址" class="flex-grow px-4 py-2 rounded-l-lg focus:outline-none">
+            <button class="px-4 py-2 bg-primary text-white rounded-r-lg hover:bg-primary/90 transition-colors">
+              订阅
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <p class="text-gray-400">© 2025 Bonk Live. 保留所有权利</p>
+        <div class="flex space-x-6 mt-4 md:mt-0">
+          <a href="#" class="text-gray-400 hover:text-white transition-colors">服务条款</a>
+          <a href="#" class="text-gray-400 hover:text-white transition-colors">隐私政策</a>
+          <a href="#" class="text-gray-400 hover:text-white transition-colors">Cookie 设置</a>
+        </div>
+      </div>
+    </div>
   </footer>
 
+  <!-- 登录模态框 -->
+  <div id="loginModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all duration-300 scale-95 opacity-0" id="loginModalContent">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold">登录账号</h3>
+        <button id="closeLoginModal" class="text-gray-500 hover:text-gray-700">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      
+      <form>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+          <input type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="输入你的邮箱">
+        </div>
+        
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+          <input type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="输入你的密码">
+        </div>
+        
+        <button type="submit" class="w-full px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+          登录
+        </button>
+        
+        <div class="flex justify-center mt-4">
+          <span class="text-sm text-gray-600">还没有账号？</span>
+          <a href="#" class="text-sm text-primary ml-2 hover:underline">立即注册</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
-    // 配置常量
-    const API_KEY = "ory_at_0ewq5PcKNA-LkZHbUByPmRBcXxNlFPp0RDqIvEpdyRM.nngJ_NWY9egmKSdBXJUFYcdapYl307B6zhZrRyJrUmY";
-    const API_URL = "wss://streaming.bitquery.io/graphql";
-    const MAX_RECONNECT_ATTEMPTS = 5;
-    
-    // GraphQL 查询
-    const query = `
-      subscription {
-        Solana {
-          InstructionBalanceUpdates(
-            where: {
-              BalanceUpdate: {Currency: {MintAddress: {endsWith: "bonk"}}},
-              Instruction: {
-                Program: {Address: {is: "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"}},
-                Method: {is: "initialize"}
-              },
-              Transaction: {Result: {Success: true}}
+    // 直播功能相关代码
+    document.addEventListener('DOMContentLoaded', function() {
+      const startPreviewBtn = document.getElementById('startPreviewBtn');
+      const publishStreamBtn = document.getElementById('publishStreamBtn');
+      const liveVideo = document.getElementById('liveVideo');
+      const livePreview = document.getElementById('livePreview');
+      const chatInput = document.getElementById('chatInput');
+      const sendChatBtn = document.getElementById('sendChatBtn');
+      const chatMessages = document.getElementById('chatMessages');
+      const viewersList = document.getElementById('viewersList');
+      const streamTitleInput = document.getElementById('streamTitleInput');
+      const streamTitle = document.getElementById('streamTitle');
+      const qualitySelect = document.getElementById('qualitySelect');
+      const loginBtn = document.getElementById('loginBtn');
+      const loginModal = document.getElementById('loginModal');
+      const loginModalContent = document.getElementById('loginModalContent');
+      const closeLoginModal = document.getElementById('closeLoginModal');
+      const navbar = document.getElementById('navbar');
+      
+      let mediaStream = null;
+      let isPreviewing = false;
+      let isStreaming = false;
+      let viewers = [];
+      
+      // 滚动时导航栏样式变化
+      window.addEventListener('scroll', function() {
+        if (window.scrollY > 10) {
+          navbar.classList.add('py-2');
+          navbar.classList.remove('py-3');
+        } else {
+          navbar.classList.add('py-3');
+          navbar.classList.remove('py-2');
+        }
+      });
+      
+      // 登录模态框
+      loginBtn.addEventListener('click', function() {
+        loginModal.classList.remove('hidden');
+        setTimeout(() => {
+          loginModalContent.classList.remove('scale-95', 'opacity-0');
+          loginModalContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
+      });
+      
+      closeLoginModal.addEventListener('click', closeLoginModalFunc);
+      
+      loginModal.addEventListener('click', function(e) {
+        if (e.target === loginModal) {
+          closeLoginModalFunc();
+        }
+      });
+      
+      function closeLoginModalFunc() {
+        loginModalContent.classList.remove('scale-100', 'opacity-100');
+        loginModalContent.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+          loginModal.classList.add('hidden');
+        }, 300);
+      }
+      
+      // 开始直播预览
+      startPreviewBtn.addEventListener('click', async function() {
+        if (isPreviewing) {
+          stopPreview();
+          startPreviewBtn.innerHTML = '<i class="fa fa-play-circle mr-2"></i><span>开启直播预览</span>';
+        } else {
+          try {
+            const quality = qualitySelect.value;
+            let constraints = {
+              video: true,
+              audio: true
+            };
+            
+            // 根据选择的画质设置分辨率
+            if (quality === 'low') {
+              constraints.video = { width: { ideal: 640 }, height: { ideal: 480 } };
+            } else if (quality === 'medium') {
+              constraints.video = { width: { ideal: 1280 }, height: { ideal: 720 } };
+            } else if (quality === 'high') {
+              constraints.video = { width: { ideal: 1920 }, height: { ideal: 1080 } };
             }
-            orderBy: {descending: Block_Time}
-          ) {
-            BalanceUpdate {
-              Currency {
-                MintAddress
-                Name
-                Symbol
-                Decimals
-                Uri
-              }
-              PostBalance
-            }
-            Block {
-              Time
-            }
-            Transaction {
-              Signature
-              Signer
-            }
+            
+            mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+            liveVideo.srcObject = mediaStream;
+            isPreviewing = true;
+            startPreviewBtn.innerHTML = '<i class="fa fa-stop-circle mr-2"></i><span>关闭直播预览</span>';
+            publishStreamBtn.disabled = false;
+            sendChatBtn.disabled = false;
+            
+            // 更新直播状态
+            updateLiveStatus();
+          } catch (error) {
+            console.error('获取媒体流失败:', error);
+            alert('无法访问摄像头或麦克风，请确保已授予权限。');
+          }
+        }
+      });
+      
+      // 发布直播
+      publishStreamBtn.addEventListener('click', function() {
+        if (isStreaming) {
+          stopStream();
+          publishStreamBtn.innerHTML = '<i class="fa fa-paper-plane mr-2"></i><span>发布直播</span>';
+        } else {
+          startStream();
+          publishStreamBtn.innerHTML = '<i class="fa fa-stop mr-2"></i><span>停止直播</span>';
+        }
+      });
+      
+      // 发送聊天消息
+      sendChatBtn.addEventListener('click', function() {
+        const message = chatInput.value.trim();
+        if (message && isStreaming) {
+          addChatMessage('主播', message);
+          chatInput.value = '';
+          
+          // 在实际应用中，这里应该发送消息到服务器
+        }
+      });
+      
+      chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          sendChatBtn.click();
+        }
+      });
+      
+      // 开始直播
+      function startStream() {
+        isStreaming = true;
+        addChatMessage('系统', '直播已开始！欢迎观众进入直播间');
+        
+        // 更新直播标题
+        streamTitle.textContent = streamTitleInput.value;
+        
+        // 模拟观众进入
+        simulateViewers();
+        
+        // 更新直播状态
+        updateLiveStatus();
+        
+        // 在实际应用中，这里应该将媒体流发送到流媒体服务器
+      }
+      
+      // 停止直播
+      function stopStream() {
+        isStreaming = false;
+        addChatMessage('系统', '直播已结束，感谢观看！');
+        
+        // 清空观众列表
+        viewers = [];
+        updateViewersList();
+        
+        // 更新直播状态
+        updateLiveStatus();
+      }
+      
+      // 停止预览
+      function stopPreview() {
+        if (mediaStream) {
+          mediaStream.getTracks().forEach(track => track.stop());
+          liveVideo.srcObject = null;
+          mediaStream = null;
+          isPreviewing = false;
+          publishStreamBtn.disabled = true;
+          sendChatBtn.disabled = true;
+          
+          // 如果直播正在进行，也停止直播
+          if (isStreaming) {
+            stopStream();
           }
         }
       }
-    `;
-
-    // DOM 元素
-    const tokensContainer = document.getElementById("tokens");
-    const errorDisplay = document.getElementById("error");
-    const loadingIndicator = document.getElementById("loading");
-    
-    // 连接状态变量
-    let ws;
-    let reconnectAttempts = 0;
-    let reconnectTimeout;
-    
-    // 创建代币卡片
-    function createTokenCard(tokenData) {
-      const token = tokenData.BalanceUpdate.Currency;
-      const blockTime = tokenData.Block.Time;
-      const signer = tokenData.Transaction.Signer;
       
-      const card = document.createElement("div");
-      card.className = "bg-dark border border-border rounded-xl p-5 token-card-hover shadow-md";
-      card.innerHTML = `
-        <div class="flex justify-between items-start mb-4">
-          <h3 class="text-lg font-semibold text-primary">${token.Name || token.Symbol || "未知代幣"}</h3>
-          <span class="bg-primary/20 text-primary px-2 py-1 rounded-full text-xs">新發行</span>
-        </div>
-        <div class="space-y-3">
-          <div class="grid grid-cols-2 gap-2 text-sm">
-            <div>
-              <span class="text-gray-400">Mint Address</span>
-              <p class="font-mono break-all">${token.MintAddress}</p>
-            </div>
-            <div>
-              <span class="text-gray-400">Symbol</span>
-              <p>${token.Symbol || "N/A"}</p>
-            </div>
-            <div>
-              <span class="text-gray-400">Decimals</span>
-              <p>${token.Decimals}</p>
-            </div>
-            <div>
-              <span class="text-gray-400">時間戳</span>
-              <p>${blockTime}</p>
-            </div>
-            <div class="col-span-2">
-              <span class="text-gray-400">簽名者</span>
-              <p class="font-mono break-all">${signer}</p>
-            </div>
-            <div class="col-span-2">
-              <span class="text-gray-400">URI</span>
-              <a href="${token.Uri || '#'}" target="_blank" class="text-secondary hover:underline ${!token.Uri ? 'text-gray-500 cursor-not-allowed' : ''}">
-                ${token.Uri || '未提供'}
-              </a>
-            </div>
-          </div>
-        </div>
-      `;
-      
-      return card;
-    }
-    
-    // 显示错误信息
-    function showError(message, isReconnecting = false) {
-      errorDisplay.textContent = "";
-      errorDisplay.classList.remove("hidden");
-      
-      const errorContent = document.createElement("div");
-      errorContent.innerHTML = `
-        <div class="flex items-start">
-          <i class="fa fa-exclamation-circle text-xl mr-3 mt-0.5"></i>
-          <div>
-            <p>${message}</p>
-            ${isReconnecting ? 
-              `<p class="mt-2 text-sm">
-                <i class="fa fa-refresh fa-spin mr-1"></i>
-                正在嘗試重新連接 (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})
-              </p>` : ''
-            }
-          </div>
-        </div>
-      `;
-      
-      errorDisplay.appendChild(errorContent);
-    }
-    
-    // 隐藏错误信息
-    function hideError() {
-      errorDisplay.classList.add("hidden");
-    }
-    
-    // 隐藏加载指示器
-    function hideLoading() {
-      loadingIndicator.classList.add("hidden");
-    }
-    
-    // 连接到WebSocket
-    function connectWebSocket() {
-      // 重置重连状态
-      if (reconnectTimeout) clearTimeout(reconnectTimeout);
-      
-      ws = new WebSocket(API_URL);
-      
-      ws.onopen = () => {
-        console.log("✅ WebSocket 已連線");
-        reconnectAttempts = 0;
-        hideError();
+      // 添加聊天消息
+      function addChatMessage(sender, message) {
+        const messageElement = document.createElement('div');
+        messageElement.className = 'mb-3';
         
-        // 发送认证信息
-        const initPayload = {
-          type: "connection_init",
-          payload: { headers: { "X-API-KEY": API_KEY } }
-        };
-        ws.send(JSON.stringify(initPayload));
-        
-        // 发送订阅查询
-        setTimeout(() => {
-          const startPayload = {
-            id: "1",
-            type: "start",
-            payload: { query: query }
-          };
-          ws.send(JSON.stringify(startPayload));
-          hideLoading();
-        }, 500);
-      };
-      
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          
-          if (data.type === "error") {
-            console.error("GraphQL 錯誤：", data);
-            showError("GraphQL查詢出錯: " + data.payload.message);
-            return;
-          }
-          
-          if (data.type === "data") {
-            const info = data.payload.data?.Solana?.InstructionBalanceUpdates?.[0];
-            if (info) {
-              const card = createTokenCard(info);
-              tokensContainer.prepend(card);
-              
-              // 添加入场动画
-              card.style.opacity = "0";
-              card.style.transform = "translateY(20px)";
-              card.style.transition = "opacity 0.5s ease, transform 0.5s ease";
-              
-              setTimeout(() => {
-                card.style.opacity = "1";
-                card.style.transform = "translateY(0)";
-              }, 10);
-            }
-          }
-        } catch (err) {
-          console.error("處理WebSocket消息出錯：", err);
-          showError("解析數據出錯: " + err.message);
-        }
-      };
-      
-      ws.onerror = (err) => {
-        console.error("WebSocket 錯誤：", err);
-        showError("WebSocket連接錯誤，請稍後再試");
-      };
-      
-      ws.onclose = (event) => {
-        console.warn(`WebSocket 已關閉 (代碼: ${event.code})`);
-        
-        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-          reconnectAttempts++;
-          const delay = reconnectAttempts * 1000; // 指数退避重连
-          
-          showError("連線中斷，正在嘗試重新連接...", true);
-          reconnectTimeout = setTimeout(connectWebSocket, delay);
+        if (sender === '系统') {
+          messageElement.innerHTML = `
+            <div class="text-center">
+              <span class="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">${sender}</span>
+            </div>
+            <p class="text-center text-sm text-gray-600 mt-1">${message}</p>
+          `;
         } else {
-          showError("重連嘗試超過最大次數，請重新整理頁面");
+          messageElement.innerHTML = `
+            <div class="flex items-start">
+              <img src="https://picsum.photos/32/32?random=${sender === '主播' ? 0 : Math.random()}" alt="${sender}头像" class="w-8 h-8 rounded-full object-cover mr-2">
+              <div>
+                <div class="flex items-center">
+                  <span class="font-medium text-sm">${sender}</span>
+                  ${sender === '主播' ? '<span class="ml-2 px-1.5 py-0.5 bg-primary text-white text-xs rounded">主播</span>' : ''}
+                </div>
+                <p class="text-sm mt-1">${message}</p>
+              </div>
+            </div>
+          `;
         }
-      };
-    }
-    
-    // 初始化连接
-    connectWebSocket();
-    
-    // 添加页面刷新功能
-    window.addEventListener('beforeunload', () => {
-      if (ws) ws.close();
+        
+        chatMessages.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+      
+      // 更新观众列表
+      function updateViewersList() {
+        viewersList.innerHTML = '';
+        
+        if (viewers.length === 0) {
+          viewersList.innerHTML = '<div class="text-center text-gray-500 italic">暂无观众</div>';
+          return;
+        }
+        
+        viewers.forEach((viewer, index) => {
+          const viewerElement = document.createElement('div');
+          viewerElement.className = 'flex items-center mb-3';
+          viewerElement.innerHTML = `
+            <img src="https://picsum.photos/32/32?random=${index + 1}" alt="${viewer}头像" class="w-8 h-8 rounded-full object-cover mr-2">
+            <span class="text-sm">${viewer}</span>
+          `;
+          viewersList.appendChild(viewerElement);
+        });
+      }
+      
+      // 更新直播状态
+      function updateLiveStatus() {
+        const liveIndicator = document.querySelector('.live-indicator span:last-child');
+        
+        if (isStreaming) {
+          liveIndicator.textContent = '直播中';
+          liveIndicator.parentElement.classList.add('text-red-500');
+          liveIndicator.parentElement.classList.remove('text-gray-500');
+        } else if (isPreviewing) {
+          liveIndicator.textContent = '预览中';
+          liveIndicator.parentElement.classList.add('text-yellow-500');
+          liveIndicator.parentElement.classList.remove('text-red-500', 'text-gray-500');
+        } else {
+          liveIndicator.textContent = '未直播';
+          liveIndicator.parentElement.classList.add('text-gray-500');
+          liveIndicator.parentElement.classList.remove('text-red-500', 'text-yellow-500');
+        }
+      }
+      
+      // 模拟观众进入
+      function simulateViewers() {
+        const viewerNames = ['观众1', '观众2', '观众3', '观众4', '观众5', '观众6', '观众7', '观众8', '观众9', '观众10'];
+        const viewerCount = Math.floor(Math.random() * 10) + 1;
+        
+        viewers = [];
+        
+        for (let i = 0; i < viewerCount; i++) {
+          const randomIndex = Math.floor(Math.random() * viewerNames.length);
+          const viewer = viewerNames[randomIndex];
+          
+          if (!viewers.includes(viewer)) {
+            viewers.push(viewer);
+            
+            // 延迟添加观众，模拟真实情况
+            setTimeout(() => {
+              addChatMessage('系统', `${viewer} 进入直播间`);
+              updateViewersList();
+              
+              // 随机发送消息
+              if (Math.random() > 0.5) {
+                setTimeout(() => {
+                  const messages = [
+                    '666666',
+                    '主播好棒！',
+                    '第一次来',
+                    '这个游戏我也玩过',
+                    '太精彩了',
+                    '什么时候开播的？',
+                    '支持主播',
+                    '哈哈哈哈',
+                    '前排围观'
+                  ];
+                  const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                  addChatMessage(viewer, randomMessage);
+                }, Math.random() * 5000 + 2000);
+              }
+            }, i * 1500);
+          }
+        }
+      }
     });
   </script>
 </body>
-</html>
+</html>    
