@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LetsBonk 最新發行代幣監控器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#ffb300',
+            secondary: '#4caf50',
+            danger: '#ff5252',
+            dark: '#1c1c1c',
+            darker: '#0f0f0f',
+            border: '#333'
+          },
+          fontFamily: {
+            sans: ['Segoe UI', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .token-card-hover {
+        @apply transition-all duration-300 hover:border-primary hover:shadow-lg hover:shadow-primary/20;
+      }
+      .spinner {
+        @apply w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin;
+      }
+    }
+  </style>
+</head>
+<body class="bg-darker text-white font-sans min-h-screen flex flex-col">
+  <header class="container mx-auto py-6">
+    <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-primary flex items-center">
+      <i class="fa fa-money mr-3"></i> LetsBonk 最新初始化代幣
+    </h1>
+  </header>
+
+  <main class="container mx-auto flex-grow">
+    <!-- 加载状态 -->
+    <div id="loading" class="flex justify-center items-center py-10">
+      <div class="spinner"></div>
+      <span class="ml-3 text-gray-400">正在连接数据服务...</span>
+    </div>
+
+    <!-- 代币卡片容器 -->
+    <div id="tokens" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-6"></div>
+    
+    <!-- 错误提示 -->
+    <div id="error" class="hidden bg-danger/10 border border-danger/30 rounded-lg p-4 my-6 text-danger"></div>
+  </main>
+
+  <footer class="container mx-auto py-4 text-center text-gray-500 text-sm">
+    <p>© 2023 LetsBonk 代幣監控器 | 數據來源: BitQuery</p>
+  </footer>
+
+  <script>
+    // 配置常量
+    const API_KEY = "ory_at_0ewq5PcKNA-LkZHbUByPmRBcXxNlFPp0RDqIvEpdyRM.nngJ_NWY9egmKSdBXJUFYcdapYl307B6zhZrRyJrUmY";
+    const API_URL = "wss://streaming.bitquery.io/graphql";
+    const MAX_RECONNECT_ATTEMPTS = 5;
+    
+    // GraphQL 查询
+    const query = `
+      subscription {
+        Solana {
+          InstructionBalanceUpdates(
+            where: {
+              BalanceUpdate: {Currency: {MintAddress: {endsWith: "bonk"}}},
+              Instruction: {
+                Program: {Address: {is: "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"}},
+                Method: {is: "initialize"}
+              },
+              Transaction: {Result: {Success: true}}
+            }
+            orderBy: {descending: Block_Time}
+          ) {
+            BalanceUpdate {
+              Currency {
+                MintAddress
+                Name
+                Symbol
+                Decimals
+                Uri
+              }
+              PostBalance
+            }
+            Block {
+              Time
+            }
+            Transaction {
+              Signature
+              Signer
+            }
+          }
+        }
+      }
+    `;
+
+    // DOM 元素
+    const tokensContainer = document.getElementById("tokens");
+    const errorDisplay = document.getElementById("error");
+    const loadingIndicator = document.getElementById("loading");
+    
+    // 连接状态变量
+    let ws;
+    let reconnectAttempts = 0;
+    let reconnectTimeout;
+    
+    // 创建代币卡片
+    function createTokenCard(tokenData) {
+      const token = tokenData.BalanceUpdate.Currency;
+      const blockTime = tokenData.Block.Time;
+      const signer = tokenData.Transaction.Signer;
+      
+      const card = document.createElement("div");
+      card.className = "bg-dark border border-border rounded-xl p-5 token-card-hover shadow-md";
+      card.innerHTML = `
+        <div class="flex justify-between items-start mb-4">
+          <h3 class="text-lg font-semibold text-primary">${token.Name || token.Symbol || "未知代幣"}</h3>
+          <span class="bg-primary/20 text-primary px-2 py-1 rounded-full text-xs">新發行</span>
+        </div>
+        <div class="space-y-3">
+          <div class="grid grid-cols-2 gap-2 text-sm">
+            <div>
+              <span class="text-gray-400">Mint Address</span>
+              <p class="font-mono break-all">${token.MintAddress}</p>
+            </div>
+            <div>
+              <span class="text-gray-400">Symbol</span>
+              <p>${token.Symbol || "N/A"}</p>
+            </div>
+            <div>
+              <span class="text-gray-400">Decimals</span>
+              <p>${token.Decimals}</p>
+            </div>
+            <div>
+              <span class="text-gray-400">時間戳</span>
+              <p>${blockTime}</p>
+            </div>
+            <div class="col-span-2">
+              <span class="text-gray-400">簽名者</span>
+              <p class="font-mono break-all">${signer}</p>
+            </div>
+            <div class="col-span-2">
+              <span class="text-gray-400">URI</span>
+              <a href="${token.Uri || '#'}" target="_blank" class="text-secondary hover:underline ${!token.Uri ? 'text-gray-500 cursor-not-allowed' : ''}">
+                ${token.Uri || '未提供'}
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      return card;
+    }
+    
+    // 显示错误信息
+    function showError(message, isReconnecting = false) {
+      errorDisplay.textContent = "";
+      errorDisplay.classList.remove("hidden");
+      
+      const errorContent = document.createElement("div");
+      errorContent.innerHTML = `
+        <div class="flex items-start">
+          <i class="fa fa-exclamation-circle text-xl mr-3 mt-0.5"></i>
+          <div>
+            <p>${message}</p>
+            ${isReconnecting ? 
+              `<p class="mt-2 text-sm">
+                <i class="fa fa-refresh fa-spin mr-1"></i>
+                正在嘗試重新連接 (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})
+              </p>` : ''
+            }
+          </div>
+        </div>
+      `;
+      
+      errorDisplay.appendChild(errorContent);
+    }
+    
+    // 隐藏错误信息
+    function hideError() {
+      errorDisplay.classList.add("hidden");
+    }
+    
+    // 隐藏加载指示器
+    function hideLoading() {
+      loadingIndicator.classList.add("hidden");
+    }
+    
+    // 连接到WebSocket
+    function connectWebSocket() {
+      // 重置重连状态
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      
+      ws = new WebSocket(API_URL);
+      
+      ws.onopen = () => {
+        console.log("✅ WebSocket 已連線");
+        reconnectAttempts = 0;
+        hideError();
+        
+        // 发送认证信息
+        const initPayload = {
+          type: "connection_init",
+          payload: { headers: { "X-API-KEY": API_KEY } }
+        };
+        ws.send(JSON.stringify(initPayload));
+        
+        // 发送订阅查询
+        setTimeout(() => {
+          const startPayload = {
+            id: "1",
+            type: "start",
+            payload: { query: query }
+          };
+          ws.send(JSON.stringify(startPayload));
+          hideLoading();
+        }, 500);
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === "error") {
+            console.error("GraphQL 錯誤：", data);
+            showError("GraphQL查詢出錯: " + data.payload.message);
+            return;
+          }
+          
+          if (data.type === "data") {
+            const info = data.payload.data?.Solana?.InstructionBalanceUpdates?.[0];
+            if (info) {
+              const card = createTokenCard(info);
+              tokensContainer.prepend(card);
+              
+              // 添加入场动画
+              card.style.opacity = "0";
+              card.style.transform = "translateY(20px)";
+              card.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+              
+              setTimeout(() => {
+                card.style.opacity = "1";
+                card.style.transform = "translateY(0)";
+              }, 10);
+            }
+          }
+        } catch (err) {
+          console.error("處理WebSocket消息出錯：", err);
+          showError("解析數據出錯: " + err.message);
+        }
+      };
+      
+      ws.onerror = (err) => {
+        console.error("WebSocket 錯誤：", err);
+        showError("WebSocket連接錯誤，請稍後再試");
+      };
+      
+      ws.onclose = (event) => {
+        console.warn(`WebSocket 已關閉 (代碼: ${event.code})`);
+        
+        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+          reconnectAttempts++;
+          const delay = reconnectAttempts * 1000; // 指数退避重连
+          
+          showError("連線中斷，正在嘗試重新連接...", true);
+          reconnectTimeout = setTimeout(connectWebSocket, delay);
+        } else {
+          showError("重連嘗試超過最大次數，請重新整理頁面");
+        }
+      };
+    }
+    
+    // 初始化连接
+    connectWebSocket();
+    
+    // 添加页面刷新功能
+    window.addEventListener('beforeunload', () => {
+      if (ws) ws.close();
+    });
+  </script>
+</body>
+</html>
