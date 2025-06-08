@@ -50,6 +50,18 @@
       font-size: 20px;
       box-sizing: border-box;
     }
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      box-sizing: border-box;
+      height: 100%;
+      width: 100%;
+      transform: scale(0.8);
+      transform-origin: top center;
+    }
+    * {
+      box-sizing: border-box;
+    }
     body {
       /* 像素格子背景 */
       background-color: #b3e0ff;
@@ -203,7 +215,7 @@
   <!-- Bonk物理锤子canvas -->
   <canvas id="bonk-physics-canvas" style="position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:10000;pointer-events:none;"></canvas>
   <!-- 导航栏 -->
-  <nav class="bg-white shadow-md fixed w-full z-50 transition-all duration-300" id="navbar">
+  <nav class="bg-white shadow-md fixed w-full z-50 transition-all duration-300 top-0 left-0" id="navbar">
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center space-x-2">
         <i class="fa fa-video-camera text-primary text-2xl"></i>
@@ -251,7 +263,7 @@
   </nav>
 
   <!-- 主内容区 -->
-  <main class="flex-grow pt-20 pb-10">
+  <main class="flex-grow pt-36 pb-10">
     <!-- 直播区域 -->
     <section class="container mx-auto px-4">
       <div class="flex flex-col lg:flex-row gap-6">
@@ -259,14 +271,14 @@
         <div class="lg:w-8/12">
           <div class="pixel-card pixel-card-live overflow-hidden">
             <!-- 直播预览/播放区 -->
-            <div id="livePreview" class="relative bg-black aspect-video flex items-center justify-center">
+            <div id="livePreview" class="relative bg-black aspect-video flex items-center justify-center" style="min-height:360px;">
               <div class="absolute inset-0 flex items-center justify-center bg-dark/50">
                 <button id="startPreviewBtn" class="px-6 py-3 bg-primary text-white rounded-full flex items-center">
                   <i class="fa fa-play-circle mr-2"></i>
                   <span>Start Live Preview</span>
                 </button>
               </div>
-              <video id="liveVideo" class="w-full h-full object-cover" autoplay muted></video>
+              <video id="liveVideo" class="w-full h-full object-cover" autoplay muted style="border:2px solid red;"></video>
             </div>
             
             <!-- 直播信息 -->
@@ -645,8 +657,7 @@
               video: true,
               audio: true
             };
-            
-            // 根据选择的画质设置分辨率
+            // Set resolution by quality
             if (quality === 'low') {
               constraints.video = { width: { ideal: 640 }, height: { ideal: 480 } };
             } else if (quality === 'medium') {
@@ -654,19 +665,19 @@
             } else if (quality === 'high') {
               constraints.video = { width: { ideal: 1920 }, height: { ideal: 1080 } };
             }
-            
             mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
             liveVideo.srcObject = mediaStream;
             isPreviewing = true;
             startPreviewBtn.innerHTML = '<i class="fa fa-stop-circle mr-2"></i><span>Stop Live Preview</span>';
             publishStreamBtn.disabled = false;
             sendChatBtn.disabled = false;
-            
-            // 更新直播状态
+            // Update live status
             updateLiveStatus();
           } catch (error) {
-            console.error('获取媒体流失败:', error);
-            alert('无法访问摄像头或麦克风，请确保已授予权限。');
+            console.error('Failed to get media stream:', error);
+            alert('Failed to access camera or microphone.\n' +
+              'Please make sure you have granted permission and your device has a camera.\n' +
+              'Error: ' + error.name + (error.message ? ('\n' + error.message) : ''));
           }
         }
       });
