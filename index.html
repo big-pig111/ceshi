@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bonk Live - 实时直播平台</title>
+  <title>Bonk Live </title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <!-- 引入像素字体 -->
@@ -56,8 +56,6 @@
       box-sizing: border-box;
       height: 100%;
       width: 100%;
-      transform: scale(0.8);
-      transform-origin: top center;
     }
     * {
       box-sizing: border-box;
@@ -191,6 +189,10 @@
         height: 36px;
         right: 12vw;
         top: 120px;
+      }
+      /* 导航栏字体大小修正，防止溢出 */
+      nav, nav button, nav input, nav a {
+        font-size: 16px !important;
       }
     }
   </style>
@@ -929,12 +931,12 @@
     }
 
     // 添加锤子刚体
-    function addBonkHammerPhysics(x) {
+    function addBonkHammerPhysics(x, y = 0) {
       // 每个锤子是一个复合刚体（头+柄）
       // 这里用一个大矩形近似
       const width = 28, height = 36;
       // y=0表示canvas最顶端
-      const hammer = Bodies.rectangle(x, 0, width, height, {
+      const hammer = Bodies.rectangle(x, y, width, height, {
         restitution: 0.2,
         friction: 0.8,
         density: 0.002,
@@ -971,8 +973,9 @@
       let dropped = 0;
       function dropBatch() {
         for (let j = 0; j < batchSize && dropped < count; j++, dropped++) {
-          const x = Math.floor(Math.random() * (bonkCanvas.width - 40)) + 20;
-          addBonkHammerPhysics(x);
+          const x = Math.floor(Math.random() * (window.innerWidth - 40)) + 20;
+          const y = Math.floor(Math.random() * (window.innerHeight - 40));
+          addBonkHammerPhysics(x, y);
         }
         if (dropped < count) setTimeout(dropBatch, batchDelay);
       }
