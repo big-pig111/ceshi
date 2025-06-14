@@ -1,1022 +1,292 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bonk Live - Live Streaming Platform</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  <!-- 引入像素字体 -->
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  
-  <!-- Tailwind 配置 -->
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#165DFF',
-            secondary: '#FF7D00',
-            dark: '#1E293B',
-            light: '#F8FAFC',
-            pixelbg: '#e0e0e0',
-            pixelborder: '#222',
-          },
-          fontFamily: {
-            pixel: ['"Press Start 2P"', 'monospace'],
-            inter: ['Inter', 'sans-serif'],
-          },
-          borderRadius: {
-            none: '0',
-            sm: '0',
-            DEFAULT: '0',
-            md: '0',
-            lg: '0',
-            xl: '0',
-            full: '0',
-          },
-          boxShadow: {
-            none: 'none',
-          },
-        },
-      }
-    }
-  </script>
-  
-  <style type="text/tailwindcss">
-    html, body, * {
-      font-family: 'Press Start 2P', monospace !important;
-      letter-spacing: 0.5px;
-      font-size: 20px;
-      box-sizing: border-box;
-    }
-    html, body {
-      margin: 0 !important;
-      padding: 0 !important;
-      box-sizing: border-box;
-      height: 100%;
-      width: 100%;
-    }
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      /* Pixel grid background */
-      background-color: #b3e0ff;
-      background-image: linear-gradient(90deg, #a3d8ff 1px, transparent 1px),
-                        linear-gradient(180deg, #a3d8ff 1px, transparent 1px);
-      background-size: 32px 32px;
-    }
-    @layer utilities {
-      .content-auto {
-        content-visibility: auto;
-      }
-      .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-      }
-      .live-indicator {
-        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-      }
-      @keyframes pulse {
-        0%, 100% {
-          opacity: 1;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>特色代币排行榜</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background: #fafbfc;
+            margin: 0;
+            padding: 0;
         }
-        50% {
-          opacity: 0.5;
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
         }
-      }
-      /* Pixel style button */
-      .pixel-btn {
-        border: 6px solid #222;
-        background: #fffbe6;
-        box-shadow: 8px 8px 0 0 #ffe066, 0 0 0 6px #222;
-        font-family: 'Press Start 2P', monospace;
-        border-radius: 0 !important;
-        font-size: 1.1em;
-        padding: 18px 32px;
-        transition: background 0.1s, transform 0.1s;
-      }
-      .pixel-btn:hover {
-        background: #c0c0c0;
-        animation: bonkshake 0.2s;
-      }
-      @keyframes bonkshake {
-        0% { transform: translateX(0); }
-        25% { transform: translateX(-4px); }
-        50% { transform: translateX(4px); }
-        75% { transform: translateX(-4px); }
-        100% { transform: translateX(0); }
-      }
-      /* Pixel style card */
-      .pixel-card {
-        border: 6px solid #222;
-        background: #fff;
-        box-shadow: 8px 8px 0 0 #b3e0ff, 0 0 0 6px #222;
-        border-radius: 0 !important;
-        padding: 18px;
-      }
-      /* Pixel style input */
-      .pixel-input {
-        border: 6px solid #222;
-        background: #fff;
-        font-family: 'Press Start 2P', monospace;
-        border-radius: 0 !important;
-        padding: 14px 18px;
-        font-size: 1.1em;
-      }
-      .pixel-input:focus {
-        outline: 2px solid #165DFF;
-        background: #f0f8ff;
-      }
-      /* Pixel style select */
-      .pixel-select {
-        border: 6px solid #222;
-        background: #fff;
-        font-family: 'Press Start 2P', monospace;
-        border-radius: 0 !important;
-        padding: 14px 18px;
-        font-size: 1.1em;
-      }
-      /* Bonk sticker badge */
-      .bonk-sticker {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        width: 38px;
-        height: 38px;
-        z-index: 10;
-      }
-      /* Bonk emoji */
-      .bonk-emoji {
-        display: inline-block;
-        width: 32px;
-        height: 32px;
-        vertical-align: middle;
-        margin-left: 8px;
-      }
-      /* Special background for recommended card */
-      .pixel-card-recommend {
-        background: #ffe066;
-        box-shadow: 8px 8px 0 0 #fffbe6, 0 0 0 6px #222;
-      }
-      /* Chat area background */
-      .pixel-card-chat {
-        background: #e0f7fa;
-        box-shadow: 8px 8px 0 0 #b3e0ff, 0 0 0 6px #222;
-      }
-      /* Live area background */
-      .pixel-card-live {
-        background: #fff;
-        box-shadow: 8px 8px 0 0 #b3e0ff, 0 0 0 6px #222;
-      }
-      /* Pixel cloud decoration */
-      .pixel-cloud {
-        position: absolute;
-        z-index: 1;
-        width: 80px;
-        height: 48px;
-        left: 10vw;
-        top: 40px;
-      }
-      .pixel-cloud2 {
-        position: absolute;
-        z-index: 1;
-        width: 60px;
-        height: 36px;
-        right: 12vw;
-        top: 120px;
-      }
-      /* Navbar font size fix to prevent overflow */
-      nav, nav button, nav input, nav a {
-        font-size: 16px !important;
-      }
-    }
-  </style>
-</head>
-<body class="font-inter bg-gray-50 text-gray-800 min-h-screen flex flex-col">
-  <!-- 像素云点缀 -->
-  <div class="pixel-cloud">
-    <svg width="80" height="48" viewBox="0 0 80 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="8" y="24" width="64" height="16" fill="#fff" stroke="#222" stroke-width="3"/>
-      <rect x="20" y="12" width="40" height="20" fill="#fff" stroke="#222" stroke-width="3"/>
-      <rect x="32" y="4" width="16" height="16" fill="#fff" stroke="#222" stroke-width="3"/>
-    </svg>
-  </div>
-  <div class="pixel-cloud2">
-    <svg width="60" height="36" viewBox="0 0 60 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="6" y="18" width="48" height="12" fill="#fff" stroke="#222" stroke-width="3"/>
-      <rect x="15" y="9" width="30" height="15" fill="#fff" stroke="#222" stroke-width="3"/>
-    </svg>
-  </div>
-  <!-- Bonk锤子堆积容器 -->
-  <div id="bonk-hammer-container" style="position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:9999;"></div>
-  <!-- Bonk物理锤子canvas -->
-  <canvas id="bonk-physics-canvas" style="position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:10000;pointer-events:none;"></canvas>
-  <!-- 导航栏 -->
-  <nav class="bg-white shadow-md fixed w-full z-50 transition-all duration-300 top-0 left-0" id="navbar">
-    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <i class="fa fa-video-camera text-primary text-2xl"></i>
-        <span class="text-3xl font-bold text-primary">Bonk Live</span>
-        <!-- 像素锤子SVG -->
-        <svg class="inline ml-2" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="8" y="8" width="20" height="8" fill="#FFD600" stroke="#222" stroke-width="3"/>
-          <rect x="16" y="16" width="4" height="14" fill="#A0522D" stroke="#222" stroke-width="3"/>
-          <rect x="18" y="30" width="2" height="4" fill="#222"/>
-        </svg>
-      </div>
-      
-      <div class="hidden md:flex items-center space-x-8">
-        <a href="#" class="text-gray-700 hover:text-primary transition-colors">Home</a>
-        <a href="#" class="text-gray-700 hover:text-primary transition-colors">Categories</a>
-        <a href="#" class="text-gray-700 hover:text-primary transition-colors">Following</a>
-        <a href="#" class="text-gray-700 hover:text-primary transition-colors">Discover</a>
-      </div>
-      
-      <div class="flex items-center space-x-4">
-        <button class="hidden md:flex items-center px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
-          <i class="fa fa-search mr-2"></i>
-          <input type="text" placeholder="Search live..." class="bg-transparent outline-none w-36 lg:w-48">
-        </button>
-        
-        <button class="md:hidden text-gray-700">
-          <i class="fa fa-search text-xl"></i>
-        </button>
-        
-        <button id="loginBtn" class="hidden md:block px-4 py-2 rounded-full bg-primary text-white hover:bg-primary/90 transition-colors">
-          Login
-        </button>
-        
-        <button id="startLiveBtn" class="px-4 py-2 rounded-full bg-secondary text-white hover:bg-secondary/90 transition-colors flex items-center">
-          <svg width="28" height="28" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="mr-2">
-            <rect x="8" y="8" width="20" height="8" fill="#FFD600" stroke="#222" stroke-width="3"/>
-            <rect x="16" y="16" width="4" height="14" fill="#A0522D" stroke="#222" stroke-width="3"/>
-            <rect x="18" y="30" width="2" height="4" fill="#222"/>
-          </svg>
-          <i class="fa fa-plus-circle mr-2"></i>
-          <span>Start Live</span>
-        </button>
-      </div>
-    </div>
-  </nav>
-
-  <!-- 主内容区 -->
-  <main class="flex-grow pt-36 pb-10">
-    <!-- 直播区域 -->
-    <section class="container mx-auto px-4">
-      <div class="flex flex-col lg:flex-row gap-6">
-        <!-- 左侧直播流 -->
-        <div class="lg:w-8/12">
-          <div class="pixel-card pixel-card-live overflow-hidden">
-            <!-- 直播预览/播放区 -->
-            <div id="livePreview" class="relative bg-black aspect-video flex items-center justify-center" style="min-height:360px;">
-              <div class="absolute inset-0 flex items-center justify-center bg-dark/50">
-                <button id="startPreviewBtn" class="px-6 py-3 bg-primary text-white rounded-full flex items-center">
-                  <i class="fa fa-play-circle mr-2"></i>
-                  <span>Start Live Preview</span>
-                </button>
-              </div>
-              <video id="liveVideo" class="w-full h-full object-cover" autoplay muted style="border:2px solid red;"></video>
-            </div>
-            
-            <!-- 直播信息 -->
-            <div class="p-6">
-              <div class="flex justify-between items-start">
-                <div>
-                  <h1 class="text-2xl font-bold mb-2 flex items-center" id="streamTitle">
-                    My Awesome Live
-                    <span class="ml-4 flex items-center">
-                      <svg width="40" height="40" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="8" y="8" width="20" height="8" fill="#FFD600" stroke="#222" stroke-width="3"/>
-                        <rect x="16" y="16" width="4" height="14" fill="#A0522D" stroke="#222" stroke-width="3"/>
-                        <rect x="18" y="30" width="2" height="4" fill="#222"/>
-                      </svg>
-                      <span style="color:#FF7D00;font-size:1.2em;margin-left:8px;">BONK!</span>
-                    </span>
-                  </h1>
-                  <div class="flex items-center space-x-4 mb-4">
-                    <div class="flex items-center">
-                      <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=animal1" alt="Pixel Animal Avatar" class="w-10 h-10 rounded-full object-cover">
-                      <span class="ml-2 font-medium">Streamer Name</span>
-                    </div>
-                    <div class="flex items-center text-gray-500">
-                      <i class="fa fa-eye mr-1"></i>
-                      <span>0 viewers</span>
-                    </div>
-                    <div class="flex items-center text-red-500 live-indicator">
-                      <span class="w-2 h-2 bg-red-500 rounded-full mr-1"></span>
-                      <span>Offline</span>
-                      <span class="bonk-emoji">🪓</span>
-                    </div>
-                  </div>
-                  <p class="text-gray-600 mb-4" id="streamDescription">Sharing awesome moments of my life, come and interact!</p>
-                </div>
-                
-                <div class="flex flex-col space-y-2">
-                  <button id="publishStreamBtn" class="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    <i class="fa fa-paper-plane mr-2"></i>
-                    <span>Go Live</span>
-                  </button>
-                  <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center">
-                    <i class="fa fa-cog mr-2"></i>
-                    <span>Settings</span>
-                  </button>
-                </div>
-              </div>
-              
-              <!-- 直播设置选项 -->
-              <div class="border-t pt-4 mt-4">
-                <h3 class="font-medium mb-3">Live Settings</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Live Title</label>
-                    <input type="text" id="streamTitleInput" value="My Awesome Live" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
-                      <option>Gaming</option>
-                      <option>Music</option>
-                      <option>Lifestyle</option>
-                      <option>Food</option>
-                      <option>Other</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Quality</label>
-                    <select id="qualitySelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
-                      <option value="low">SD (480p)</option>
-                      <option value="medium" selected>HD (720p)</option>
-                      <option value="high">Full HD (1080p)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Privacy</label>
-                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
-                      <option>Public</option>
-                      <option>Followers Only</option>
-                      <option>Private</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- 右侧聊天和观众 -->
-        <div class="lg:w-4/12 space-y-6">
-          <!-- 聊天区域 -->
-          <div class="pixel-card pixel-card-chat flex flex-col h-[500px]">
-            <div class="p-4 border-b flex items-center">
-              <svg width="32" height="32" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="mr-2">
-                <rect x="8" y="8" width="20" height="8" fill="#FFD600" stroke="#222" stroke-width="3"/>
-                <rect x="16" y="16" width="4" height="14" fill="#A0522D" stroke="#222" stroke-width="3"/>
-                <rect x="18" y="30" width="2" height="4" fill="#222"/>
-              </svg>
-              <span style="font-size:1.2em;margin-right:8px;">🐶</span>
-              <h3 class="font-bold text-lg">Chat</h3>
-            </div>
-            <div id="chatMessages" class="flex-grow p-4 overflow-y-auto scrollbar-hide">
-              <div class="text-center text-gray-500 italic">
-                You can interact with viewers here after the live starts
-              </div>
-            </div>
-            <div class="p-4 border-t">
-              <div class="flex">
-                <input type="text" id="chatInput" placeholder="Send a message..." class="flex-grow px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
-                <button id="sendChatBtn" class="px-4 py-2 bg-primary text-white rounded-r-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                  <i class="fa fa-paper-plane"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <!-- 观众列表 -->
-          <div class="pixel-card flex flex-col overflow-hidden">
-            <div class="p-4 border-b">
-              <h3 class="font-bold text-lg">Viewers</h3>
-            </div>
-            <div id="viewersList" class="p-4">
-              <div class="text-center text-gray-500 italic">
-                No viewers yet
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-    
-    <!-- 推荐直播 -->
-    <section class="container mx-auto px-4 mt-12">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">Recommended Lives</h2>
-        <a href="#" class="text-primary hover:underline">See More</a>
-      </div>
-      
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <!-- 直播卡片 -->
-        <div class="pixel-card pixel-card-recommend overflow-hidden hover:shadow-xl transition-shadow">
-          <div class="relative aspect-video">
-            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=cover1" alt="Pixel Art Cover" class="w-full h-full object-cover">
-            <!-- Bonk贴纸 -->
-            <div class="bonk-sticker">
-              <svg width="38" height="38" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="8" y="8" width="20" height="8" fill="#FFD600" stroke="#222" stroke-width="3"/>
-                <rect x="16" y="16" width="4" height="14" fill="#A0522D" stroke="#222" stroke-width="3"/>
-                <rect x="18" y="30" width="2" height="4" fill="#222"/>
-              </svg>
-            </div>
-            <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center">
-              <span class="w-2 h-2 bg-white rounded-full mr-1 live-indicator"></span>
-              LIVE
-            </div>
-            <div class="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-              <i class="fa fa-eye mr-1"></i> 2.4k
-            </div>
-          </div>
-          <div class="p-4">
-            <h3 class="font-medium mb-2 line-clamp-1">Hot Game Highlights</h3>
-            <div class="flex items-center mb-3">
-              <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=animal1" alt="Pixel Animal Avatar" class="w-8 h-8 rounded-full object-cover">
-              <span class="ml-2 text-sm">Game Master</span>
-            </div>
-            <div class="flex items-center text-xs text-gray-500">
-              <span>Gaming</span>
-              <span class="mx-2">•</span>
-              <span>Started 2h ago</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="pixel-card pixel-card-recommend overflow-hidden hover:shadow-xl transition-shadow">
-          <div class="relative aspect-video">
-            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=cover2" alt="Pixel Art Cover" class="w-full h-full object-cover">
-            <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center">
-              <span class="w-2 h-2 bg-white rounded-full mr-1 live-indicator"></span>
-              LIVE
-            </div>
-            <div class="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-              <i class="fa fa-eye mr-1"></i> 1.8k
-            </div>
-          </div>
-          <div class="p-4">
-            <h3 class="font-medium mb-2 line-clamp-1">Original Music Sharing</h3>
-            <div class="flex items-center mb-3">
-              <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=animal2" alt="Pixel Animal Avatar" class="w-8 h-8 rounded-full object-cover">
-              <span class="ml-2 text-sm">Music Creator</span>
-            </div>
-            <div class="flex items-center text-xs text-gray-500">
-              <span>Music</span>
-              <span class="mx-2">•</span>
-              <span>Started 1h ago</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="pixel-card pixel-card-recommend overflow-hidden hover:shadow-xl transition-shadow">
-          <div class="relative aspect-video">
-            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=cover3" alt="Pixel Art Cover" class="w-full h-full object-cover">
-            <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center">
-              <span class="w-2 h-2 bg-white rounded-full mr-1 live-indicator"></span>
-              LIVE
-            </div>
-            <div class="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-              <i class="fa fa-eye mr-1"></i> 3.1k
-            </div>
-          </div>
-          <div class="p-4">
-            <h3 class="font-medium mb-2 line-clamp-1">Michelin Chef Cooking</h3>
-            <div class="flex items-center mb-3">
-              <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=animal3" alt="Pixel Animal Avatar" class="w-8 h-8 rounded-full object-cover">
-              <span class="ml-2 text-sm">Food Blogger</span>
-            </div>
-            <div class="flex items-center text-xs text-gray-500">
-              <span>Food</span>
-              <span class="mx-2">•</span>
-              <span>Started 3h ago</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="pixel-card pixel-card-recommend overflow-hidden hover:shadow-xl transition-shadow">
-          <div class="relative aspect-video">
-            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=cover4" alt="Pixel Art Cover" class="w-full h-full object-cover">
-            <div class="absolute top-2 left-2 bg-gray-500 text-white text-xs px-2 py-1 rounded flex items-center">
-              <span class="w-2 h-2 bg-white rounded-full mr-1"></span>
-              Starting in 10 min
-            </div>
-            <div class="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-              <i class="fa fa-user mr-1"></i> 523
-            </div>
-          </div>
-          <div class="p-4">
-            <h3 class="font-medium mb-2 line-clamp-1">Outdoor Adventure Live</h3>
-            <div class="flex items-center mb-3">
-              <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=animal4" alt="Pixel Animal Avatar" class="w-8 h-8 rounded-full object-cover">
-              <span class="ml-2 text-sm">Adventurer</span>
-            </div>
-            <div class="flex items-center text-xs text-gray-500">
-              <span>Lifestyle</span>
-              <span class="mx-2">•</span>
-              <span>Starting in 10 min</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- 登录模态框 -->
-  <div id="loginModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all duration-300 scale-95 opacity-0" id="loginModalContent">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-xl font-bold">Login Account</h3>
-        <button id="closeLoginModal" class="text-gray-500 hover:text-gray-700">
-          <i class="fa fa-times"></i>
-        </button>
-      </div>
-      
-      <form>
-        <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="Enter your email">
-        </div>
-        
-        <div class="mb-6">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-          <input type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="Enter your password">
-        </div>
-        
-        <button type="submit" class="w-full px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
-          Login
-        </button>
-        
-        <div class="flex justify-center mt-4">
-          <span class="text-sm text-gray-600">Don't have an account?</span>
-          <a href="#" class="text-sm text-primary ml-2 hover:underline">Register Now</a>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Pixel Bonk Warning Modal -->
-  <div id="bonk-warning-modal" style="display:flex;align-items:center;justify-content:center;position:fixed;z-index:20000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);">
-    <div style="background:#ffe066;border:6px solid #222;box-shadow:8px 8px 0 #fffbe6,0 0 0 6px #222;font-family:'Press Start 2P',monospace;padding:32px 32px 24px 32px;min-width:340px;max-width:90vw;text-align:center;position:relative;">
-      <div style="display:flex;justify-content:center;margin-bottom:18px;">
-        <svg width="56" height="56" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="8" y="8" width="20" height="8" fill="#FFD600" stroke="#222" stroke-width="3"/>
-          <rect x="16" y="16" width="4" height="14" fill="#A0522D" stroke="#222" stroke-width="3"/>
-          <rect x="18" y="30" width="2" height="4" fill="#222"/>
-        </svg>
-      </div>
-      <div style="color:#222;font-size:16px;line-height:2;letter-spacing:1px;">
-        <b>Warning:</b> This site is under construction.<br>
-        Features are incomplete.<br>
-        <span style="color:#FF7D00;">Watch out for falling Bonk hammers!</span>
-      </div>
-      <button id="bonk-warning-ok" style="margin-top:28px;border:4px solid #222;background:#fffbe6;box-shadow:0 0 0 4px #222;font-family:'Press Start 2P',monospace;font-size:16px;padding:12px 32px;cursor:pointer;transition:background 0.1s;border-radius:0;outline:none;">
-        OK
-      </button>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
-  <script>
-    // 直播功能相关代码
-    document.addEventListener('DOMContentLoaded', function() {
-      const startPreviewBtn = document.getElementById('startPreviewBtn');
-      const publishStreamBtn = document.getElementById('publishStreamBtn');
-      const liveVideo = document.getElementById('liveVideo');
-      const livePreview = document.getElementById('livePreview');
-      const chatInput = document.getElementById('chatInput');
-      const sendChatBtn = document.getElementById('sendChatBtn');
-      const chatMessages = document.getElementById('chatMessages');
-      const viewersList = document.getElementById('viewersList');
-      const streamTitleInput = document.getElementById('streamTitleInput');
-      const streamTitle = document.getElementById('streamTitle');
-      const qualitySelect = document.getElementById('qualitySelect');
-      const loginBtn = document.getElementById('loginBtn');
-      const loginModal = document.getElementById('loginModal');
-      const loginModalContent = document.getElementById('loginModalContent');
-      const closeLoginModal = document.getElementById('closeLoginModal');
-      const navbar = document.getElementById('navbar');
-      
-      let mediaStream = null;
-      let isPreviewing = false;
-      let isStreaming = false;
-      let viewers = [];
-      
-      // 滚动时导航栏样式变化
-      window.addEventListener('scroll', function() {
-        if (window.scrollY > 10) {
-          navbar.classList.add('py-2');
-          navbar.classList.remove('py-3');
-        } else {
-          navbar.classList.add('py-3');
-          navbar.classList.remove('py-2');
+        .title {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
         }
-      });
-      
-      // 登录模态框
-      loginBtn.addEventListener('click', function() {
-        loginModal.classList.remove('hidden');
-        setTimeout(() => {
-          loginModalContent.classList.remove('scale-95', 'opacity-0');
-          loginModalContent.classList.add('scale-100', 'opacity-100');
-        }, 10);
-      });
-      
-      closeLoginModal.addEventListener('click', closeLoginModalFunc);
-      
-      loginModal.addEventListener('click', function(e) {
-        if (e.target === loginModal) {
-          closeLoginModalFunc();
+        .subtitle {
+            color: #888;
+            margin-bottom: 32px;
         }
-      });
-      
-      function closeLoginModalFunc() {
-        loginModalContent.classList.remove('scale-100', 'opacity-100');
-        loginModalContent.classList.add('scale-95', 'opacity-0');
-        setTimeout(() => {
-          loginModal.classList.add('hidden');
-        }, 300);
-      }
-      
-      // 开始直播预览
-      startPreviewBtn.addEventListener('click', async function() {
-        if (isPreviewing) {
-          stopPreview();
-          startPreviewBtn.innerHTML = '<i class="fa fa-play-circle mr-2"></i><span>Start Live Preview</span>';
-        } else {
-          try {
-            const quality = qualitySelect.value;
-            let constraints = {
-              video: true,
-              audio: true
-            };
-            // Set resolution by quality
-            if (quality === 'low') {
-              constraints.video = { width: { ideal: 640 }, height: { ideal: 480 } };
-            } else if (quality === 'medium') {
-              constraints.video = { width: { ideal: 1280 }, height: { ideal: 720 } };
-            } else if (quality === 'high') {
-              constraints.video = { width: { ideal: 1920 }, height: { ideal: 1080 } };
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+        .token-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 20px 18px 18px 18px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            cursor: pointer;
+            border: none;
+            transition: box-shadow 0.2s;
+        }
+        .token-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+        .token-img {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            background: #eee;
+            margin-right: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #bbb;
+        }
+        .token-info {
+            flex: 1;
+        }
+        .token-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .token-meta {
+            font-size: 0.95rem;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .token-value {
+            color: #ff6600;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .token-bar {
+            height: 6px;
+            background: #f3f3f3;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .token-bar-inner {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6600 60%, #ffd580 100%);
+            border-radius: 3px;
+        }
+        @media (max-width: 600px) {
+            .card-grid {
+                grid-template-columns: 1fr;
             }
-            mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
-            liveVideo.srcObject = mediaStream;
-            isPreviewing = true;
-            startPreviewBtn.innerHTML = '<i class="fa fa-stop-circle mr-2"></i><span>Stop Live Preview</span>';
-            publishStreamBtn.disabled = false;
-            sendChatBtn.disabled = false;
-            // Update live status
-            updateLiveStatus();
-          } catch (error) {
-            console.error('Failed to get media stream:', error);
-            alert('Failed to access camera or microphone.\n' +
-              'Please make sure you have granted permission and your device has a camera.\n' +
-              'Error: ' + error.name + (error.message ? ('\n' + error.message) : ''));
-          }
         }
-      });
-      
-      // 发布直播
-      publishStreamBtn.addEventListener('click', function() {
-        if (isStreaming) {
-          stopStream();
-          publishStreamBtn.innerHTML = '<i class="fa fa-paper-plane mr-2"></i><span>Go Live</span>';
-        } else {
-          startStream();
-          publishStreamBtn.innerHTML = '<i class="fa fa-stop mr-2"></i><span>Stop Live</span>';
-        }
-      });
-      
-      // 发送聊天消息
-      sendChatBtn.addEventListener('click', function() {
-        const message = chatInput.value.trim();
-        if (message && isStreaming) {
-          addChatMessage('System', message);
-          chatInput.value = '';
-          
-          // 在实际应用中，这里应该发送消息到服务器
-        }
-      });
-      
-      chatInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          sendChatBtn.click();
-        }
-      });
-      
-      // 开始直播
-      function startStream() {
-        isStreaming = true;
-        addChatMessage('System', 'Live started! Welcome!');
-        
-        // 更新直播标题
-        streamTitle.textContent = streamTitleInput.value;
-        
-        // 模拟观众进入
-        simulateViewers();
-        
-        // 更新直播状态
-        updateLiveStatus();
-        
-        // 在实际应用中，这里应该将媒体流发送到流媒体服务器
-      }
-      
-      // 停止直播
-      function stopStream() {
-        isStreaming = false;
-        addChatMessage('System', 'Live ended, thank you for watching!');
-        
-        // 清空观众列表
-        viewers = [];
-        updateViewersList();
-        
-        // 更新直播状态
-        updateLiveStatus();
-      }
-      
-      // 停止预览
-      function stopPreview() {
-        if (mediaStream) {
-          mediaStream.getTracks().forEach(track => track.stop());
-          liveVideo.srcObject = null;
-          mediaStream = null;
-          isPreviewing = false;
-          publishStreamBtn.disabled = true;
-          sendChatBtn.disabled = true;
-          
-          // 如果直播正在进行，也停止直播
-          if (isStreaming) {
-            stopStream();
-          }
-        }
-      }
-      
-      // 添加聊天消息
-      function addChatMessage(sender, message) {
-        const messageElement = document.createElement('div');
-        messageElement.className = 'mb-3';
-        
-        if (sender === 'System') {
-          messageElement.innerHTML = `
-            <div class="text-center flex flex-col items-center">
-              <span class="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">${sender}</span>
-              <span style="font-size:1.5em;">🪓 BONK!</span>
-            </div>
-            <p class="text-center text-sm text-gray-600 mt-1">${message}</p>
-          `;
-        } else {
-          messageElement.innerHTML = `
-            <div class="flex items-start">
-              <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=animal${sender === 'Host' ? 0 : Math.floor(Math.random()*1000)}" alt="${sender} Pixel Animal" class="w-8 h-8 rounded-full object-cover mr-2">
-              <div>
-                <div class="flex items-center">
-                  <span class="font-medium text-sm">${sender}</span>
-                  ${sender === 'Host' ? '<span class="ml-2 px-1.5 py-0.5 bg-primary text-white text-xs rounded">Host</span>' : ''}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">特色代币</div>
+        <div class="subtitle">目前最热门的代币，备受关注。</div>
+        <div class="card-grid">
+            <button class="token-card">
+                <div class="token-img">U</div>
+                <div class="token-info">
+                    <div class="token-title">UHC</div>
+                    <div class="token-meta">CA: 5w29...bonk · 28天前</div>
+                    <div class="token-value">市值: $17.1K</div>
+                    <div class="token-bar"><div class="token-bar-inner" style="width: 80%"></div></div>
                 </div>
-                <p class="text-sm mt-1">${message}</p>
-              </div>
+            </button>
+            <button class="token-card">
+                <div class="token-img"><img src="https://randomuser.me/api/portraits/women/44.jpg" alt="ghoul" style="width:100%;height:100%;border-radius:12px;"></div>
+                <div class="token-info">
+                    <div class="token-title">ghoul</div>
+                    <div class="token-meta">CA: AsCM...bonk · 8分钟前</div>
+                    <div class="token-value">市值: $4.1K</div>
+                    <div class="token-bar"><div class="token-bar-inner" style="width: 30%"></div></div>
+                </div>
+            </button>
+            <button class="token-card">
+                <div class="token-img">A</div>
+                <div class="token-info">
+                    <div class="token-title">dwildo</div>
+                    <div class="token-meta">CA: Asf1...bonk · 19分钟前</div>
+                    <div class="token-value">市值: $4.1K</div>
+                    <div class="token-bar"><div class="token-bar-inner" style="width: 30%"></div></div>
+                </div>
+            </button>
+            <button class="token-card">
+                <div class="token-img">X</div>
+                <div class="token-info">
+                    <div class="token-title">XPeople</div>
+                    <div class="token-meta">CA: As66...bonk · 12分钟前</div>
+                    <div class="token-value">市值: $4.1K</div>
+                    <div class="token-bar"><div class="token-bar-inner" style="width: 30%"></div></div>
+                </div>
+            </button>
+            <button class="token-card">
+                <div class="token-img"><img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=facearea&w=64&h=64" alt="Kisses" style="width:100%;height:100%;border-radius:12px;"></div>
+                <div class="token-info">
+                    <div class="token-title">Kisses</div>
+                    <div class="token-meta">CA: As9d...bonk · 15分钟前</div>
+                    <div class="token-value">市值: $4.1K</div>
+                    <div class="token-bar"><div class="token-bar-inner" style="width: 30%"></div></div>
+                </div>
+            </button>
+            <button class="token-card">
+                <div class="token-img">G</div>
+                <div class="token-info">
+                    <div class="token-title">GODWILLING</div>
+                    <div class="token-meta">CA: 7RTB...bonk · 15分钟前</div>
+                    <div class="token-value">市值: $4.1K</div>
+                    <div class="token-bar"><div class="token-bar-inner" style="width: 30%"></div></div>
+                </div>
+            </button>
+            <button class="token-card">
+                <div class="token-img">IT</div>
+                <div class="token-info">
+                    <div class="token-title">IT</div>
+                    <div class="token-meta">CA: Djys...bonk · 16分钟前</div>
+                    <div class="token-value">市值: $4.1K</div>
+                    <div class="token-bar"><div class="token-bar-inner" style="width: 30%"></div></div>
+                </div>
+            </button>
+            <button class="token-card">
+                <div class="token-img"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Trumpday" style="width:100%;height:100%;border-radius:12px;"></div>
+                <div class="token-info">
+                    <div class="token-title">Trumpday</div>
+                    <div class="token-meta">CA: As60...bonk · 17分钟前</div>
+                    <div class="token-value">市值: $4.1K</div>
+                    <div class="token-bar"><div class="token-bar-inner" style="width: 30%"></div></div>
+                </div>
+            </button>
+            <button class="token-card">
+                <div class="token-img"><img src="https://i.imgur.com/1Q9Z1Zm.png" alt="DOGE" style="width:100%;height:100%;border-radius:12px;"></div>
+                <div class="token-info">
+                    <div class="token-title">DOGE</div>
+                    <div class="token-meta">CA: Ecyp...bonk · 10小时前</div>
+                    <div class="token-value">市值: $6.4K</div>
+                    <div class="token-bar"><div class="token-bar-inner" style="width: 50%"></div></div>
+                </div>
+            </button>
+            <button class="token-card">
+                <div class="token-img">P</div>
+                <div class="token-info">
+                    <div class="token-title">paper</div>
+                    <div class="token-meta">CA: 5utE...bonk · 2天前</div>
+                    <div class="token-value">市值: $7K</div>
+                    <div class="token-bar"><div class="token-bar-inner" style="width: 60%"></div></div>
+                </div>
+            </button>
+        </div>
+    </div>
+    <!-- 弹窗 -->
+    <div id="popup-modal" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);backdrop-filter:blur(2px);align-items:center;justify-content:center;">
+        <div id="popup-content" style="background:#fff;border-radius:22px;box-shadow:0 4px 24px rgba(0,0,0,0.18);width:340px;max-width:90vw;padding:28px 18px 24px 18px;position:relative;display:flex;flex-direction:column;align-items:center;">
+            <button id="popup-close" style="position:absolute;top:12px;right:12px;background:#ff8000;color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:1.3rem;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.08);">X</button>
+            <div id="popup-img" style="margin-top:8px;margin-bottom:18px;">
+                <svg width="120" height="90" viewBox="0 0 120 90"><polygon points="30,10 100,20 90,80 20,70" style="fill:#ff8000;stroke:#222;stroke-width:2"/></svg>
             </div>
-          `;
-        }
-        
-        chatMessages.appendChild(messageElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      }
-      
-      // 更新观众列表
-      function updateViewersList() {
-        viewersList.innerHTML = '';
-        
-        if (viewers.length === 0) {
-          viewersList.innerHTML = '<div class="text-center text-gray-500 italic">No viewers yet</div>';
-          return;
-        }
-        
-        viewers.forEach((viewer, index) => {
-          const viewerElement = document.createElement('div');
-          viewerElement.className = 'flex items-center mb-3';
-          viewerElement.innerHTML = `
-            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=animal${index + 1}" alt="${viewer} Pixel Animal" class="w-8 h-8 rounded-full object-cover mr-2">
-            <span class="text-sm">${viewer}</span>
-          `;
-          viewersList.appendChild(viewerElement);
+            <div id="popup-title" style="font-size:2rem;font-weight:600;margin-bottom:8px;">伊拉克</div>
+            <div id="popup-desc" style="color:#444;font-size:1.08rem;margin-bottom:22px;text-align:center;">这个代币是 CSKOL.fun 代币生态系统的一部分。</div>
+            <button style="width:90%;margin-bottom:12px;padding:10px 0;border-radius:12px;border:2px solid #222;background:#f3f3f3;font-size:1.1rem;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <span style="font-size:1.2rem;">🏆</span> 全球排名
+            </button>
+            <button style="width:90%;padding:10px 0;border-radius:12px;border:none;background:#ff8000;color:#fff;font-size:1.1rem;font-weight:600;cursor:pointer;">生成令牌</button>
+        </div>
+    </div>
+    <!-- 二级弹窗 -->
+    <div id="token-modal" style="display:none;position:fixed;z-index:2000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);backdrop-filter:blur(2px);align-items:center;justify-content:center;">
+        <div id="token-content" style="background:#f7f7f7;border-radius:24px;box-shadow:0 4px 24px rgba(0,0,0,0.18);width:520px;max-width:98vw;padding:32px 28px 32px 28px;position:relative;display:flex;flex-direction:column;align-items:center;">
+            <button id="token-close" style="position:absolute;top:18px;right:18px;background:#ff8000;color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:1.5rem;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.08);">X</button>
+            <div style="display:flex;align-items:center;width:100%;margin-bottom:18px;">
+                <img src="https://i.imgur.com/0Q9Z1Zm.png" alt="logo" style="width:48px;height:48px;border-radius:12px;background:#fff;margin-right:12px;">
+                <span style="font-size:2rem;font-weight:700;color:#222;">生成令牌</span>
+            </div>
+            <div style="color:#222;font-size:1.08rem;margin-bottom:18px;text-align:left;width:100%;">
+                您似乎已准备好创建新的 畜生kol token 并担任其认领的角色。但请记住，担任认领kol伴随着重大责任。牌属、治理、人员、营销……所有这一切。如果你真的确定，那就展示你的实力。
+            </div>
+            <div style="background:#222;border-radius:20px;width:90%;max-width:400px;margin:0 auto 18px auto;padding:24px 0;display:flex;flex-direction:column;align-items:center;">
+                <div id="token-img" style="margin-bottom:12px;"></div>
+                <div id="token-name" style="font-size:1.3rem;font-weight:600;color:#ff8000;"></div>
+                <button style="margin-top:18px;padding:8px 18px;border-radius:10px;border:none;background:#eaeaea;font-size:1rem;cursor:pointer;">⬇ 下载 Token Logo（可选）</button>
+            </div>
+            <div style="width:100%;margin-bottom:12px;">
+                <div style="font-weight:700;font-size:1.1rem;margin-bottom:4px;">在 Pump.fun 上部署</div>
+                <div style="color:#222;font-size:1rem;margin-bottom:8px;">要领取令牌并完全控制此kol，请启动一个新的 pump token 并将其命名为 <b>tokenName</b>。您可以选择任何您喜欢的符号。对于 website 字段，请使用 <span style='color:#ff8000;font-weight:600;'>https://borders.fun/country/tokenName</span>。我们还建议添加一个 X 社区来帮助您领导您的员工。</div>
+                <div style="background:#ff8000;color:#fff;padding:8px 12px;border-radius:8px;font-size:0.98rem;margin-bottom:8px;">
+                    <b>记得：</b>如果您的代币在 30 分钟内没有达到 30K 市值和 30 参与者，您的代币将被永久删除，以便另一位认领者可以使用新代币获得领导地位，您将被记住为过期的认领者。
+                </div>
+                <div style="color:#222;font-size:0.98rem;">您一次只能管理一个令牌。但是，即使您作为认领者失败了，也不必担心，您始终可以自由地使用新的kol代币重新开始。</div>
+            </div>
+            <div style="width:100%;display:flex;justify-content:flex-end;gap:16px;">
+                <button style="padding:10px 22px;border-radius:12px;border:2px solid #222;background:#fff;font-size:1.1rem;font-weight:500;cursor:pointer;">如何使用？</button>
+                <button style="padding:10px 22px;border-radius:12px;border:none;background:#ff8000;color:#fff;font-size:1.1rem;font-weight:600;cursor:pointer;">立即部署！</button>
+            </div>
+        </div>
+    </div>
+    <script>
+    // 监听所有卡片按钮
+    document.querySelectorAll('.token-card').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // 获取卡片上的代币名字
+            var tokenName = btn.querySelector('.token-title').innerText;
+            document.getElementById('popup-title').innerText = tokenName;
+            // 记录当前卡片图片
+            var imgDiv = btn.querySelector('.token-img');
+            var imgTag = imgDiv.querySelector('img');
+            var tokenImgHtml = '';
+            if(imgTag) {
+                tokenImgHtml = '<img src="'+imgTag.src+'" alt="logo" style="width:120px;height:120px;border-radius:18px;background:#fff;">';
+            } else {
+                tokenImgHtml = '<div style="width:120px;height:120px;border-radius:18px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:4rem;color:#ff8000;font-weight:700;">'+imgDiv.textContent.trim().charAt(0)+'</div>';
+            }
+            // 存储到window，供生成令牌弹窗用
+            window._currentToken = {
+                name: tokenName,
+                imgHtml: tokenImgHtml
+            };
+            document.getElementById('popup-modal').style.display = 'flex';
         });
-      }
-      
-      // 更新直播状态
-      function updateLiveStatus() {
-        const liveIndicator = document.querySelector('.live-indicator span:last-child');
-        
-        if (isStreaming) {
-          liveIndicator.textContent = 'Live';
-          liveIndicator.parentElement.classList.add('text-red-500');
-          liveIndicator.parentElement.classList.remove('text-gray-500');
-        } else if (isPreviewing) {
-          liveIndicator.textContent = 'Previewing';
-          liveIndicator.parentElement.classList.add('text-yellow-500');
-          liveIndicator.parentElement.classList.remove('text-red-500', 'text-gray-500');
-        } else {
-          liveIndicator.textContent = 'Offline';
-          liveIndicator.parentElement.classList.add('text-gray-500');
-          liveIndicator.parentElement.classList.remove('text-red-500', 'text-yellow-500');
-        }
-      }
-      
-      // 模拟观众进入
-      function simulateViewers() {
-        const viewerNames = ['Viewer1', 'Viewer2', 'Viewer3', 'Viewer4', 'Viewer5', 'Viewer6', 'Viewer7', 'Viewer8', 'Viewer9', 'Viewer10'];
-        const viewerCount = Math.floor(Math.random() * 10) + 1;
-        
-        viewers = [];
-        
-        for (let i = 0; i < viewerCount; i++) {
-          const randomIndex = Math.floor(Math.random() * viewerNames.length);
-          const viewer = viewerNames[randomIndex];
-          
-          if (!viewers.includes(viewer)) {
-            viewers.push(viewer);
-            
-            // 延迟添加观众，模拟真实情况
-            setTimeout(() => {
-              addChatMessage('System', `${viewer} joined the stream`);
-              updateViewersList();
-              
-              // 随机发送消息
-              if (Math.random() > 0.5) {
-                setTimeout(() => {
-                  const messages = [
-                    'Awesome!',
-                    'Great host!',
-                    'First time here',
-                    'I played this game too',
-                    'So amazing',
-                    'When did you start?',
-                    'Support the host',
-                    'Hahaha',
-                    'Front row view'
-                  ];
-                  const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-                  addChatMessage(viewer, randomMessage);
-                }, Math.random() * 5000 + 2000);
-              }
-            }, i * 1500);
-          }
-        }
-      }
     });
-
-    // Bonk物理锤子雨（matter.js）
-    const bonkCanvas = document.getElementById('bonk-physics-canvas');
-    const bonkCtx = bonkCanvas.getContext('2d');
-    let ground = null;
-    function resizeBonkCanvas() {
-      const dpr = window.devicePixelRatio || 1;
-      bonkCanvas.width = window.innerWidth * dpr;
-      bonkCanvas.height = window.innerHeight * dpr;
-      bonkCanvas.style.width = window.innerWidth + 'px';
-      bonkCanvas.style.height = window.innerHeight + 'px';
-      bonkCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      // 移除旧地面，新建新地面
-      if (ground) {
-        World.remove(world, ground);
-      }
-      ground = Bodies.rectangle(window.innerWidth/2, window.innerHeight-10, window.innerWidth, 20, { isStatic: true, render: {visible: false} });
-      World.add(world, ground);
-    }
-
-    // Matter.js setup
-    const Engine = window.Matter.Engine;
-    const Render = window.Matter.Render;
-    const World = window.Matter.World;
-    const Bodies = window.Matter.Bodies;
-    const Body = window.Matter.Body;
-    const Composite = window.Matter.Composite;
-    const Events = window.Matter.Events;
-
-    const engine = Engine.create();
-    const world = engine.world;
-    world.gravity.y = 1.2;
-
-    // 存储所有锤子刚体和其绘制信息
-    let bonkHammers = [];
-
-    // 锤子SVG路径（简化版）
-    function drawBonkHammer(ctx, x, y, angle=0) {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(angle);
-      // 柄
-      ctx.fillStyle = '#A0522D';
-      ctx.fillRect(8, 16, 8, 28);
-      // 柄底
-      ctx.fillStyle = '#222';
-      ctx.fillRect(12, 44, 2, 6);
-      // 头
-      ctx.fillStyle = '#FFD600';
-      ctx.strokeStyle = '#222';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.rect(0, 4, 24, 10);
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // 添加锤子刚体
-    function addBonkHammerPhysics(x, y = 0) {
-      // 每个锤子是一个复合刚体（头+柄）
-      // 这里用一个大矩形近似
-      const width = 28, height = 36;
-      // y=0表示canvas最顶端
-      const hammer = Bodies.rectangle(x, y, width, height, {
-        restitution: 0.2,
-        friction: 0.8,
-        density: 0.002,
-        render: {visible: false}
-      });
-      World.add(world, hammer);
-      bonkHammers.push({body: hammer, width, height});
-    }
-
-    // 渲染所有锤子
-    function renderBonkHammers() {
-      bonkCtx.clearRect(0, 0, bonkCanvas.width, bonkCanvas.height);
-      for (const hammer of bonkHammers) {
-        const {body, width, height} = hammer;
-        // 调试输出
-        // console.log('draw hammer at', body.position.x, body.position.y);
-        drawBonkHammer(bonkCtx, body.position.x - width/2, body.position.y - height/2, body.angle);
-      }
-    }
-
-    // 动画循环
-    function bonkPhysicsLoop() {
-      Engine.update(engine, 1000/60);
-      renderBonkHammers();
-      requestAnimationFrame(bonkPhysicsLoop);
-    }
-    bonkPhysicsLoop();
-
-    // 按钮点击生成物理锤子
-    function bonkPhysicsRain() {
-      const count = (Math.floor(Math.random() * 21) + 30) * 9; // 270~450个
-      const batchSize = 5; // 每批同时掉落5个
-      const batchDelay = 80; // 每批间隔80ms
-      let dropped = 0;
-      function dropBatch() {
-        for (let j = 0; j < batchSize && dropped < count; j++, dropped++) {
-          const x = Math.floor(Math.random() * (window.innerWidth - 40)) + 20;
-          const y = Math.floor(Math.random() * (window.innerHeight - 40));
-          addBonkHammerPhysics(x, y);
-        }
-        if (dropped < count) setTimeout(dropBatch, batchDelay);
-      }
-      dropBatch();
-    }
-
-    // 监听所有按钮
-    document.addEventListener('DOMContentLoaded', function() {
-      setTimeout(() => {
-        document.querySelectorAll('button').forEach(btn => {
-          btn.addEventListener('click', function(e) {
-            bonkPhysicsRain();
-          });
-        });
-      }, 500);
+    // 关闭弹窗
+    document.getElementById('popup-close').onclick = function() {
+        document.getElementById('popup-modal').style.display = 'none';
+    };
+    // 点击遮罩关闭弹窗（可选）
+    document.getElementById('popup-modal').addEventListener('click', function(e) {
+        if (e.target === this) this.style.display = 'none';
     });
-
-    // 现在再调用resize和监听resize
-    resizeBonkCanvas();
-    window.addEventListener('resize', resizeBonkCanvas);
-
-    // 全局点击召唤锤子雨，排除输入框、下拉框、文本域、contenteditable
-    document.addEventListener('click', function(e) {
-      const tag = e.target.tagName.toLowerCase();
-      if (
-        tag === "input" ||
-        tag === "textarea" ||
-        tag === "select" ||
-        e.target.isContentEditable
-      ) return;
-      bonkPhysicsRain();
+    // 监听生成令牌按钮
+    document.querySelector('#popup-content button:last-child').onclick = function() {
+        var token = window._currentToken || {name:'',imgHtml:''};
+        document.getElementById('token-name').innerText = token.name;
+        document.getElementById('token-img').innerHTML = token.imgHtml;
+        document.getElementById('token-modal').style.display = 'flex';
+    };
+    // 关闭二级弹窗
+    document.getElementById('token-close').onclick = function() {
+        document.getElementById('token-modal').style.display = 'none';
+    };
+    // 点击遮罩关闭二级弹窗
+    document.getElementById('token-modal').addEventListener('click', function(e) {
+        if (e.target === this) this.style.display = 'none';
     });
-
-    // Show pixel Bonk warning modal on page load
-    window.addEventListener('DOMContentLoaded', function() {
-      const modal = document.getElementById('bonk-warning-modal');
-      const okBtn = document.getElementById('bonk-warning-ok');
-      okBtn.addEventListener('click', function() {
-        modal.style.display = 'none';
-      });
-    });
-  </script>
+    // 监听立即部署按钮
+    document.querySelector('#token-content button:last-child').onclick = function() {
+        window.open('https://pump.fun/create', '_blank');
+    };
+    </script>
 </body>
-</html>    
+</html>
