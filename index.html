@@ -99,16 +99,16 @@
         <div class="title">CSKOL 代幣</div>
         <div class="subtitle">目前最熱門的 CSkol 代幣，備受關注。</div>
         <div class="card-grid">
-            <button class="token-card" data-ca="0x5w29...">
+            <button class="token-card" data-ca="soon">
                 <div class="token-img"><img src="1.jpg" alt="UHC" style="width:100%;height:100%;border-radius:12px;"></div>
                 <div class="token-info">
                     <div class="token-title">CSnainiu</div>
-                    <div class="token-meta">CA: 尚未認領</div>
+                    <div class="token-meta">CA: </div>
                     <div class="token-value">尚未認領</div>
                     <div class="token-bar"><div class="token-bar-inner" style="width: 0%"></div></div>
                 </div>
             </button>
-            <button class="token-card" data-ca="AsCM...">
+            <button class="token-card" data-ca="soon">
                 <div class="token-img"><img src="2.jpg" alt="ghoul" style="width:100%;height:100%;border-radius:12px;"></div>
                 <div class="token-info">
                     <div class="token-title">CSbaolingdeng</div>
@@ -117,7 +117,7 @@
                     <div class="token-bar"><div class="token-bar-inner" style="width: 0%"></div></div>
                 </div>
             </button>
-            <button class="token-card" data-ca="Asf1...">
+            <button class="token-card" data-ca="soon">
                 <div class="token-img"><img src="3.jpg" alt="dwildo" style="width:100%;height:100%;border-radius:12px;"></div>
                 <div class="token-info">
                     <div class="token-title">CSfacairiji</div>
@@ -126,7 +126,7 @@
                     <div class="token-bar"><div class="token-bar-inner" style="width: 0%"></div></div>
                 </div>
             </button>
-            <button class="token-card" data-ca="As66...">
+            <button class="token-card" data-ca="soon">
                 <div class="token-img"><img src="4.jpg" alt="XPeople" style="width:100%;height:100%;border-radius:12px;"></div>
                 <div class="token-info">
                     <div class="token-title">CSjingouwajueji</div>
@@ -135,7 +135,7 @@
                     <div class="token-bar"><div class="token-bar-inner" style="width: 0%"></div></div>
                 </div>
             </button>
-            <button class="token-card" data-ca="As9d...">
+            <button class="token-card" data-ca="soon">
                 <div class="token-img"><img src="5.jpg" alt="Kisses" style="width:100%;height:100%;border-radius:12px;"></div>
                 <div class="token-info">
                     <div class="token-title">CSwickli</div>
@@ -144,7 +144,7 @@
                     <div class="token-bar"><div class="token-bar-inner" style="width: 0%"></div></div>
                 </div>
             </button>
-            <button class="token-card" data-ca="6th...">
+            <button class="token-card" data-ca="soon">
                 <div class="token-img"><img src="6.jpg" alt="NewToken" style="width:100%;height:100%;border-radius:12px;"></div>
                 <div class="token-info">
                     <div class="token-title">CSenheng</div>
@@ -284,6 +284,14 @@
         for (const card of cards) {
             const ca = card.getAttribute('data-ca');
             if (!ca) continue;
+            // 缩写CA
+            let caShort = ca;
+            if (/^0x[a-fA-F0-9]{40}$/.test(ca)) {
+                caShort = ca.slice(0, 6) + '...' + ca.slice(-4);
+            }
+            // 渲染CA缩写
+            let meta = card.querySelector('.token-meta');
+            if (meta) meta.innerText = 'CA: ' + caShort;
             try {
                 const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
                 const data = await res.json();
@@ -307,9 +315,16 @@
         }
     }
     updateTokenCards();
+    setInterval(updateTokenCards, 10000); // 每10秒自动刷新一次市值
     // 监听所有卡片按钮
     document.querySelectorAll('.token-card').forEach(btn => {
         btn.addEventListener('click', function() {
+            const ca = btn.getAttribute('data-ca');
+            // 如果是有效CA，直接跳转
+            if (/^0x[a-fA-F0-9]{40}$/.test(ca)) {
+                window.open('https://four.meme/token/' + ca, '_blank');
+                return;
+            }
             // 获取卡片上的代币名字
             var tokenName = btn.querySelector('.token-title').innerText;
             document.getElementById('popup-title').innerText = tokenName;
