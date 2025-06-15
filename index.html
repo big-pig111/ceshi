@@ -92,6 +92,61 @@
                 grid-template-columns: 1fr;
             }
         }
+        #chat-widget {
+            position: fixed;
+            left: 24px;
+            bottom: 24px;
+            width: 320px;
+            max-height: 260px;
+            background: rgba(255, 249, 196, 0.7); /* 更淡黄 */
+            border-radius: 16px 16px 0 16px;
+            box-shadow: 0 4px 24px #ffe06699;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+            font-family: inherit;
+            border: 2px solid #FFE066;
+        }
+        #chat-messages {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+            font-size: 1rem;
+            color: #bfa800; /* 柔和黄 */
+            background: rgba(255, 253, 230, 0.5);
+        }
+        #chat-form {
+            display: flex;
+            border-top: 1.5px solid #FFE066;
+            background: rgba(255, 249, 196, 0.5);
+        }
+        #chat-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 10px;
+            font-size: 1rem;
+            background: transparent;
+            color: #bfa800;
+        }
+        #chat-form button {
+            background: #FFE066;
+            color: #fff;
+            border: none;
+            padding: 0 18px;
+            font-size: 1rem;
+            border-radius: 0 0 0 0;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        #chat-form button:hover {
+            background: #fff9c4;
+            color: #bfa800;
+        }
     </style>
 </head>
 <body>
@@ -138,7 +193,7 @@
             <button class="token-card" data-ca="soon">
                 <div class="token-img"><img src="5.jpg" alt="Kisses" style="width:100%;height:100%;border-radius:12px;"></div>
                 <div class="token-info">
-                    <div class="token-title">CSwickli</div>
+                    <div class="token-title">CSWickli</div>
                     <div class="token-meta">CA: 尚未認領</div>
                     <div class="token-value">尚未認領</div>
                     <div class="token-bar"><div class="token-bar-inner" style="width: 0%"></div></div>
@@ -277,6 +332,16 @@
             <div id="add-card-wait" style="display:none;font-size:1.2rem;color:#ff8000;margin-top:18px;">等待審核...</div>
         </div>
     </div>
+    <div id="chat-widget">
+      <div id="chat-messages"></div>
+      <form id="chat-form" onsubmit="return false;">
+        <input id="chat-input" type="text" placeholder="输入消息..." autocomplete="off" />
+        <button id="chat-send-btn" type="button">发送</button>
+      </form>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script>
     // 自动获取并渲染卡片代币信息
     async function updateTokenCards() {
@@ -442,6 +507,65 @@
             document.getElementById('add-card-modal').style.display = 'none';
             document.getElementById('add-card-form').style.display = '';
             document.getElementById('add-card-wait').style.display = 'none';
+        }
+    });
+    const firebaseConfig = {
+        apiKey: "AIzaSyA5Z5ieEbAcfQX0kxGSn9ldGXhzvAwx_8M",
+        authDomain: "chat-294cc.firebaseapp.com",
+        databaseURL: "https://chat-294cc-default-rtdb.firebaseio.com",
+        projectId: "chat-294cc",
+        storageBucket: "chat-294cc.appspot.com",
+        messagingSenderId: "913615304269",
+        appId: "1:913615304269:web:0274ffaccb8e6b678e4e04",
+        measurementId: "G-SJR9NDW86B"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    // 匿名登录
+    firebase.auth().signInAnonymously().catch(console.error);
+    // 聊天消息同步
+    const chatMessages = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatSendBtn = document.getElementById('chat-send-btn');
+    function addMessage(msg, self) {
+        const div = document.createElement('div');
+        div.textContent = msg.text;
+        div.style.margin = '4px 0';
+        div.style.textAlign = self ? 'right' : 'left';
+        div.style.opacity = self ? '1' : '0.8';
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    let myUid = null;
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+            myUid = user.uid;
+            db.collection('chat-messages').orderBy('timestamp').limitToLast(50)
+                .onSnapshot(snapshot => {
+                    chatMessages.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const msg = doc.data();
+                        addMessage(msg, msg.uid === myUid);
+                    });
+                });
+        }
+    });
+    function sendChat() {
+        const text = chatInput.value.trim();
+        if (!text) return;
+        db.collection('chat-messages').add({
+            text,
+            uid: myUid,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        chatInput.value = '';
+    }
+    chatSendBtn.addEventListener('click', sendChat);
+    chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendChat();
         }
     });
     </script>
