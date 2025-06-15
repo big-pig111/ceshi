@@ -10,10 +10,31 @@
             background: #fafbfc;
             margin: 0;
             padding: 0;
-            background-image: url('');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+            min-height: 100vh;
+        }
+        #bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            background: url('2.jpg') center center / cover no-repeat;
+        }
+        #bg-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+            background: rgba(255,255,255,0.75);
+        }
+        #main-content, .container, #chat-widget, #review-btn, #review-modal {
+            position: relative;
+            z-index: 2;
         }
         .container {
             max-width: 1200px;
@@ -151,9 +172,123 @@
             background: #fff9c4;
             color: #bfa800;
         }
+        #review-btn {
+            position: fixed;
+            top: 50%;
+            right: 32px;
+            transform: translateY(-50%);
+            z-index: 10001;
+            background: #ffe066;
+            color: #bfa800;
+            border: none;
+            border-radius: 16px;
+            padding: 16px 28px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 4px 16px #ffe06655;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        #review-btn:hover {
+            background: #fffbe6;
+            color: #ff8000;
+        }
+        #review-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.18);
+            backdrop-filter: blur(2px);
+            z-index: 20000;
+            align-items: center;
+            justify-content: center;
+        }
+        #review-content {
+            background: #fffbe6;
+            border-radius: 24px;
+            box-shadow: 0 4px 32px #ffe06699;
+            width: 600px;
+            max-width: 96vw;
+            max-height: 80vh;
+            padding: 32px 24px 24px 24px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+        }
+        #review-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: #ffe066;
+            color: #bfa800;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            box-shadow: 0 1px 4px #ffe06655;
+        }
+        .review-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px #ffe06655;
+            padding: 18px 16px;
+            margin-bottom: 18px;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 18px;
+        }
+        .review-card-img {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            background: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #bbb;
+            overflow: hidden;
+        }
+        .review-card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+        .review-card-info {
+            flex: 1;
+        }
+        .review-card-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #bfa800;
+        }
+        .review-card-desc {
+            font-size: 0.98rem;
+            color: #888;
+            margin-bottom: 6px;
+        }
+        .review-card-twitter {
+            font-size: 0.95rem;
+            color: #1da1f2;
+            text-decoration: underline;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body>
+    <div id="bg-overlay"></div>
+    <div id="bg-mask"></div>
     <div class="container">
         <div class="title">CSKOL 代幣</div>
         <div class="subtitle">目前最熱門的 CSkol 代幣，備受關注。</div>
@@ -168,7 +303,7 @@
                 </div>
             </button>
             <button class="token-card" data-ca="soon">
-                <div class="token-img"><img src="" alt="ghoul" style="width:100%;height:100%;border-radius:12px;"></div>
+                <div class="token-img"><img src="2.jpg" alt="ghoul" style="width:100%;height:100%;border-radius:12px;"></div>
                 <div class="token-info">
                     <div class="token-title">CSbaolingdeng</div>
                     <div class="token-meta">CA: 尚未認領</div>
@@ -343,6 +478,13 @@
         <button id="chat-send-btn" type="button">发送</button>
       </form>
     </div>
+    <button id="review-btn">审核查询</button>
+    <div id="review-modal">
+      <div id="review-content">
+        <button id="review-close">X</button>
+        <div id="review-list"></div>
+      </div>
+    </div>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -500,10 +642,32 @@
         document.getElementById('add-card-form').style.display = '';
         document.getElementById('add-card-wait').style.display = 'none';
     };
-    document.getElementById('add-card-form').onsubmit = function(e) {
+    document.getElementById('add-card-form').onsubmit = async function(e) {
         e.preventDefault();
-        document.getElementById('add-card-form').style.display = 'none';
-        document.getElementById('add-card-wait').style.display = 'block';
+        // 获取表单数据
+        const name = document.getElementById('add-card-form').querySelector('#add-desc').value.trim();
+        const desc = document.getElementById('add-card-form').querySelector('#add-desc').value.trim();
+        const twitter = document.getElementById('add-card-form').querySelector('#add-twitter').value.trim();
+        const avatarFile = document.getElementById('add-card-form').querySelector('#add-avatar').files[0];
+        let imgUrl = '';
+        if (avatarFile) {
+            const storageRef = firebase.storage().ref();
+            const fileRef = storageRef.child('user-cards/' + Date.now() + '_' + avatarFile.name);
+            await fileRef.put(avatarFile);
+            imgUrl = await fileRef.getDownloadURL();
+        }
+        firebase.firestore().collection('user-cards').add({
+            name,
+            desc,
+            twitter,
+            imgUrl,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        // 立即关闭弹窗并重置表单
+        document.getElementById('add-card-modal').style.display = 'none';
+        document.getElementById('add-card-form').reset();
+        document.getElementById('add-card-form').style.display = '';
+        document.getElementById('add-card-wait').style.display = 'none';
     };
     // 点击遮罩关闭弹窗
     document.getElementById('add-card-modal').addEventListener('click', function(e) {
@@ -572,6 +736,45 @@
             sendChat();
         }
     });
+    // 审核查询弹窗逻辑
+    const reviewBtn = document.getElementById('review-btn');
+    const reviewModal = document.getElementById('review-modal');
+    const reviewClose = document.getElementById('review-close');
+    const reviewList = document.getElementById('review-list');
+    reviewBtn.onclick = function() {
+        reviewModal.style.display = 'flex';
+    };
+    reviewClose.onclick = function() {
+        reviewModal.style.display = 'none';
+    };
+    reviewModal.addEventListener('click', function(e) {
+        if (e.target === this) reviewModal.style.display = 'none';
+    });
+    // Firestore卡片集合监听
+    const cardsRef = firebase.firestore().collection('user-cards');
+    function renderReviewCards(cards) {
+        reviewList.innerHTML = '';
+        cards.forEach(card => {
+            const data = card.data();
+            const div = document.createElement('div');
+            div.className = 'review-card';
+            div.innerHTML = `
+                <div class="review-card-img">${data.imgUrl ? `<img src="${data.imgUrl}" alt="头像">` : ''}</div>
+                <div class="review-card-info">
+                    <div class="review-card-title">${data.name || '未命名'}</div>
+                    <div class="review-card-desc">${data.desc || ''}</div>
+                    ${data.twitter ? `<a class="review-card-twitter" href="${data.twitter}" target="_blank">${data.twitter}</a>` : ''}
+                </div>
+            `;
+            reviewList.appendChild(div);
+        });
+    }
+    cardsRef.orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+        renderReviewCards(snapshot.docs);
+    });
+    // 新增卡片时存储到user-cards集合（需在新增卡片表单提交处补充上传逻辑）
+    // 例如：
+    // cardsRef.add({name, desc, twitter, imgUrl, timestamp: firebase.firestore.FieldValue.serverTimestamp()});
     </script>
 </body>
 </html>
