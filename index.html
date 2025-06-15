@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>特色代币排行榜</title>
+    <title>特色代幣排行榜</title>
     <style>
         body {
             font-family: 'Segoe UI', 'Arial', sans-serif;
@@ -303,9 +303,9 @@
                 </div>
             </button>
             <button class="token-card" data-ca="soon">
-                <div class="token-img"><img src="22.jpg" alt="ghoul" style="width:100%;height:100%;border-radius:12px;"></div>
+                <div class="token-img"><img src="2.jpg" alt="ghoul" style="width:100%;height:100%;border-radius:12px;"></div>
                 <div class="token-info">
-                    <div class="token-title">CSbaoliandeng</div>
+                    <div class="token-title">CSbaolingdeng</div>
                     <div class="token-meta">CA: 尚未認領</div>
                     <div class="token-value">尚未認領</div>
                     <div class="token-bar"><div class="token-bar-inner" style="width: 0%"></div></div>
@@ -355,12 +355,11 @@
     <!-- 弹窗 -->
     <div id="popup-modal" style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);backdrop-filter:blur(2px);align-items:center;justify-content:center;">
         <div id="popup-content" style="background:#fff;border-radius:22px;box-shadow:0 4px 24px rgba(0,0,0,0.18);width:340px;max-width:90vw;padding:28px 18px 24px 18px;position:relative;display:flex;flex-direction:column;align-items:center;">
-            <button id="popup-close" style="position:absolute;top:12px;right:12px;background:#ff8000;color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:1.3rem;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.08);">X</button>
+            <button id="popup-close" style="position:absolute;top:12px;right:12px;background:#ff8000;color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:1.3rem;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.08);">關閉</button>
             <div id="popup-img" style="margin-top:8px;margin-bottom:18px;"></div>
             <div id="popup-title" style="font-size:2rem;font-weight:600;margin-bottom:8px;">伊拉克</div>
             <div id="popup-desc" style="color:#444;font-size:1.08rem;margin-bottom:22px;text-align:center;">此代幣是 CSKOL.fun 代幣生態系統的一部分。</div>
-          
-            <button style="width:90%;padding:10px 0;border-radius:12px;border:none;background:#ff8000;color:#fff;font-size:1.1rem;font-weight:600;cursor:pointer;">生成令牌</button>
+            <button style="width:90%;padding:10px 0;border-radius:12px;border:none;background:#ff8000;color:#fff;font-size:1.1rem;font-weight:600;cursor:pointer;">生成代幣</button>
         </div>
     </div>
     <!-- 二级弹窗 -->
@@ -395,7 +394,7 @@
     <!-- 进入网站欢迎弹窗 -->
     <div id="welcome-modal" style="display:flex;position:fixed;z-index:3000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);backdrop-filter:blur(2px);align-items:center;justify-content:center;">
         <div id="welcome-content" style="background:#ededed;border-radius:28px;box-shadow:0 4px 32px rgba(0,0,0,0.18);width:600px;max-width:98vw;padding:32px 32px 24px 32px;position:relative;display:flex;flex-direction:column;align-items:center;">
-            <button id="welcome-close" style="position:absolute;top:18px;right:18px;background:#ff8000;color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:1.5rem;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.08);">X</button>
+            <button id="welcome-close" style="position:absolute;top:18px;right:18px;background:#ff8000;color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:1.5rem;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.08);">關閉</button>
             <div style="display:flex;align-items:center;width:100%;margin-bottom:18px;">
                 <img src="logo.png" alt="logo" style="width:54px;height:54px;border-radius:14px;background:#fff;margin-right:14px;">
                 <span style="font-size:2.2rem;font-weight:700;color:#222;">歡迎來到 CSKOL.fun！</span>
@@ -410,7 +409,7 @@
             <div style="width:100%;margin-bottom:10px;font-size:1.15rem;font-weight:700;">購買 $CSKOL 代幣</div>
             <div style="width:100%;display:flex;align-items:center;background:#ff8000;border-radius:12px;padding:8px 12px 8px 8px;margin-bottom:14px;">
                 <img src="logo.png" alt="logo" style="width:32px;height:32px;border-radius:8px;background:#fff;margin-right:10px;">
-                <span style="font-size:1.05rem;color:#fff;font-family:monospace;overflow-x:auto;">soon</span>
+                <span style="font-size:1.05rem;color:#fff;font-family:monospace;overflow-x:auto;">即將上線</span>
                 <span id="welcome-copy" style="margin-left:auto;background:#222;color:#ff8000;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;cursor:pointer;">⧉</span>
             </div>
             <div style="color:#222;font-size:1rem;margin-bottom:10px;text-align:left;width:100%;">
@@ -457,18 +456,18 @@
             <button id="add-card-close" style="position:absolute;top:12px;right:12px;background:#ff8000;color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:1.3rem;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.08);">X</button>
             <div style="font-size:1.4rem;font-weight:600;margin-bottom:18px;">新增 KOL</div>
             <form id="add-card-form" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:16px;">
-                <label style="width:100%;text-align:left;font-size:1rem;">頭像上傳
-                    <input type="file" id="add-avatar" accept="image/*" style="display:block;margin-top:6px;">
+                <label style="width:100%;text-align:left;font-size:1rem;">名稱
+                    <input type="text" id="add-name" placeholder="請輸入KOL名稱" style="width:100%;padding:6px 8px;border-radius:8px;border:1px solid #ccc;margin-top:6px;">
                 </label>
                 <label style="width:100%;text-align:left;font-size:1rem;">推特連結
-                    <input type="url" id="add-twitter" placeholder="https://twitter.com/xxx" style="width:100%;padding:6px 8px;border-radius:8px;border:1px solid #ccc;margin-top:6px;">
+                    <input type="text" id="add-twitter" placeholder="https://twitter.com/xxx" style="width:100%;padding:6px 8px;border-radius:8px;border:1px solid #ccc;margin-top:6px;">
                 </label>
                 <label style="width:100%;text-align:left;font-size:1rem;">主要事蹟
                     <textarea id="add-desc" rows="3" placeholder="請輸入主要事蹟" style="width:100%;padding:6px 8px;border-radius:8px;border:1px solid #ccc;margin-top:6px;"></textarea>
                 </label>
-                <button id="add-card-submit" type="submit" style="width:100%;padding:10px 0;border-radius:12px;border:none;background:#ff8000;color:#fff;font-size:1.1rem;font-weight:600;cursor:pointer;">確定</button>
+                <button id="add-card-submit" type="submit" style="width:100%;padding:10px 0;border-radius:12px;border:none;background:#ff8000;color:#fff;font-size:1.1rem;font-weight:600;cursor:pointer;z-index:9999;" tabindex="0">確定</button>
             </form>
-            <div id="add-card-wait" style="display:none;font-size:1.2rem;color:#ff8000;margin-top:18px;">等待審核...</div>
+            <div id="add-card-wait" style="display:none;font-size:1.2rem;color:#ff8000;margin-top:18px;">正在提交...</div>
         </div>
     </div>
     <div id="chat-widget">
@@ -478,16 +477,17 @@
         <button id="chat-send-btn" type="button">发送</button>
       </form>
     </div>
-    <button id="review-btn">审核查询</button>
+    <button id="review-btn">審核查詢</button>
     <div id="review-modal">
       <div id="review-content">
-        <button id="review-close">X</button>
+        <button id="review-close">關閉</button>
         <div id="review-list"></div>
       </div>
     </div>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     <script>
     // 自动获取并渲染卡片代币信息
     async function updateTokenCards() {
@@ -642,28 +642,21 @@
         document.getElementById('add-card-form').style.display = '';
         document.getElementById('add-card-wait').style.display = 'none';
     };
+    // 只绑定一次onsubmit
+    document.getElementById('add-card-form').onsubmit = null;
     document.getElementById('add-card-form').onsubmit = async function(e) {
         e.preventDefault();
-        // 获取表单数据
-        const name = document.getElementById('add-card-form').querySelector('#add-desc').value.trim();
-        const desc = document.getElementById('add-card-form').querySelector('#add-desc').value.trim();
-        const twitter = document.getElementById('add-card-form').querySelector('#add-twitter').value.trim();
-        const avatarFile = document.getElementById('add-card-form').querySelector('#add-avatar').files[0];
-        let imgUrl = '';
-        if (avatarFile) {
-            const storageRef = firebase.storage().ref();
-            const fileRef = storageRef.child('user-cards/' + Date.now() + '_' + avatarFile.name);
-            await fileRef.put(avatarFile);
-            imgUrl = await fileRef.getDownloadURL();
-        }
+        const name = document.getElementById('add-name').value.trim() || '未命名';
+        const desc = document.getElementById('add-desc').value.trim();
+        const twitter = document.getElementById('add-twitter').value.trim();
+        // 不再处理头像上传
         firebase.firestore().collection('user-cards').add({
             name,
             desc,
             twitter,
-            imgUrl,
+            imgUrl: '',
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
-        // 立即关闭弹窗并重置表单
         document.getElementById('add-card-modal').style.display = 'none';
         document.getElementById('add-card-form').reset();
         document.getElementById('add-card-form').style.display = '';
@@ -759,7 +752,7 @@
             const div = document.createElement('div');
             div.className = 'review-card';
             div.innerHTML = `
-                <div class="review-card-img">${data.imgUrl ? `<img src="${data.imgUrl}" alt="头像">` : ''}</div>
+                <div class="review-card-img"></div>
                 <div class="review-card-info">
                     <div class="review-card-title">${data.name || '未命名'}</div>
                     <div class="review-card-desc">${data.desc || ''}</div>
